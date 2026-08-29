@@ -45,7 +45,12 @@ public final class HeadlessRunner {
             }
         });
         AIBrain brain = new AIBrain(cfg);
-        bot.setChatHandler(new ChatHandler(cfg, bot, brain));
+        PlayerController controller = new PlayerController(cfg, bot);
+        controller.start();
+        ChatHandler chatHandler = new ChatHandler(cfg, bot, brain);
+        chatHandler.setController(controller);
+        bot.setChatHandler(chatHandler);
+        bot.setController(controller);
 
         VoiceServer voiceServer = startVoiceIfEnabled(cfg, brain);
 

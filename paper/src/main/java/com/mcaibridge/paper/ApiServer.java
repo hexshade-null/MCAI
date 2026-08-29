@@ -96,6 +96,28 @@ public class ApiServer {
                 respond(ex, 500, "{\"error\":\"" + e.toString().replace("\"", "'") + "\"}");
             }
         });
+        server.createContext("/mcai/where", ex -> {
+            try {
+                if (!tokenOk(ex)) {
+                    respond(ex, 401, "{\"error\":\"unauthorized\"}");
+                    return;
+                }
+                var q = ex.getRequestURI().getQuery();
+                String name = q == null ? "" : java.net.URLDecoder.decode(
+                        java.util.Arrays.stream(q.split("&")).filter(s -> s.startsWith("name="))
+                                .findFirst().map(s -> s.substring(5)).orElse(""), StandardCharsets.UTF_8);
+                org.bukkit.entity.Player p = name.isBlank() ? null : Bukkit.getPlayerExact(name);
+                if (p == null) {
+                    respond(ex, 404, "{\"error\":\"player not found\"}");
+                    return;
+                }
+                var loc = p.getLocation();
+                respond(ex, 200, "{\"name\":\"" + p.getName() + "\",\"x\":" + loc.getX()
+                        + ",\"y\":" + loc.getY() + ",\"z\":" + loc.getZ() + "}");
+            } catch (Exception e) {
+                respond(ex, 500, "{\"error\":\"" + e.toString().replace("\"", "'") + "\"}");
+            }
+        });
         server.createContext("/mcai/skinimg", ex -> {
             try {
                 String path = ex.getRequestURI().getPath(); // /mcai/skinimg/<name>.png

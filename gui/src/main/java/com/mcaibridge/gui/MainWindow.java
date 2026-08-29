@@ -8,6 +8,7 @@ import com.mcaibridge.config.BridgeConfig.PlayerProfile;
 import com.mcaibridge.core.AIBrain;
 import com.mcaibridge.core.ChatHandler;
 import com.mcaibridge.core.MCBot;
+import com.mcaibridge.core.PlayerController;
 import com.mcaibridge.skin.SkinManager;
 import com.mcaibridge.voice.VoiceEngines;
 import com.mcaibridge.voice.VoiceServer;
@@ -205,6 +206,10 @@ public class MainWindow extends Application {
                 });
                 rt.chatHandler = new ChatHandler(cfg, rt.bot, rt.brain);
                 rt.bot.setChatHandler(rt.chatHandler);
+                PlayerController ctl = new PlayerController(cfg, rt.bot);
+                ctl.start();
+                rt.bot.setController(ctl);
+                rt.chatHandler.setController(ctl);
                 running.put(p.name, rt);
                 ensureVoiceServer(cfg, rt.brain);
                 rt.bot.connect();

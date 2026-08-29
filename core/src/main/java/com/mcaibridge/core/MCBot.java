@@ -50,6 +50,7 @@ public class MCBot {
 
     private volatile ClientSession session;
     private volatile ChatHandler chatHandler;
+    private volatile PlayerController controller;
     private volatile boolean shutdown;
 
     public MCBot(BridgeConfig cfg, AuthResult auth, Listener listener) {
@@ -60,6 +61,17 @@ public class MCBot {
 
     public void setChatHandler(ChatHandler chatHandler) {
         this.chatHandler = chatHandler;
+    }
+
+    public void setController(PlayerController controller) {
+        this.controller = controller;
+    }
+
+    /** 发送任意协议包（移动/挖掘/指令等）。 */
+    public void send(Packet packet) {
+        ClientSession s = session;
+        if (s == null || state.get() != State.CONNECTED) return;
+        s.send(packet);
     }
 
     public State getState() {
@@ -104,7 +116,15 @@ public class MCBot {
             }
 
             @Override
-            public void packetReceived(Session session, Packet packet) {
+            public void packetReceived(Session ses, Packet packet) {
+                PlayerController ctl = controller;
+                if (ctl != null) {
+                    try {
+                        ctl.handle(packet);
+                    } catch (Exception e) {
+                        log.debug("控制器处理包异常: {}", e.toString());
+                    }
+                }
                 ChatHandler handler = chatHandler;
                 if (handler == null) return;
                 try {
@@ -145,6 +165,8 @@ public class MCBot {
         scheduler.shutdownNow();
         ChatHandler handler = chatHandler;
         if (handler != null) handler.shutdown();
+        PlayerController ctl = controller;
+        if (ctl != null) ctl.stop();
         ClientSession s = session;
         if (s != null) {
             try {
