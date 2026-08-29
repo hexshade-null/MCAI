@@ -42,26 +42,6 @@ public class BridgePlugin extends JavaPlugin {
         skinService = new SkinService(this, token, port);
 
         getServer().getPluginManager().registerEvents(new SkinLoginListener(skinService), this);
-        // 诊断：打印 Paper 认知的玩家聊天可见性
-        getServer().getPluginManager().registerEvents(new org.bukkit.event.Listener() {
-            @org.bukkit.event.EventHandler
-            public void onClientOptions(com.destroystokyo.paper.event.player.PlayerClientOptionsChangeEvent e) {
-                log.info("诊断: {} 发送设置包 chatVisibility={}", e.getPlayer().getName(), e.getChatVisibility());
-            }
-        }, this);
-        getServer().getPluginManager().registerEvents(new org.bukkit.event.Listener() {
-            @org.bukkit.event.EventHandler
-            public void onJoin(org.bukkit.event.player.PlayerJoinEvent e) {
-                for (int delay = 0; delay <= 200; delay += 40) { // 0/2/4/6/8/10 秒
-                    final int d = delay;
-                    getServer().getScheduler().runTaskLater(thisBridge, () -> {
-                        if (!e.getPlayer().isOnline()) return;
-                        Object v = e.getPlayer().getClientOption(com.destroystokyo.paper.ClientOption.CHAT_VISIBILITY);
-                        log.info("诊断+{}s: {} chatVisibility={}", d, e.getPlayer().getName(), v);
-                    }, delay * 20L);
-                }
-            }
-        }, this);
 
         try {
             apiServer = new ApiServer(this, skinService, port);

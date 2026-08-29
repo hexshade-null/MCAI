@@ -12,7 +12,7 @@ skin:
   upload_url: "http://localhost:8788/mcai/skin"
   token: "changeme"
 voice:
-  enabled: false
+  enabled: true
   server_port: 8787
   token: "changeme"
 players:

@@ -1,252 +1,72 @@
-[20:38:25] [ServerMain/INFO]: [bootstrap] Running Java 21 (OpenJDK 64-Bit Server VM 21.0.12.1; Homebrew Homebrew) on Mac OS X 27.0 (aarch64)
-[20:38:25] [ServerMain/INFO]: [bootstrap] Loading Paper 1.21.11-132-ver/1.21.11@c5eb079 (2026-05-11T11:43:09Z) for Minecraft 1.21.11
-[20:38:26] [ServerMain/INFO]: [PluginInitializerManager] Initializing plugins...
-[20:38:27] [Paper Plugin Remapper Thread - 0/INFO]: [ReobfServer] Remapping server...
-[20:38:29] [Paper Plugin Remapper Thread - 0/INFO]: [ReobfServer] Done remapping server in 2935ms.
-[20:38:29] [Paper Plugin Remapper Thread - 0/INFO]: [PluginRemapper] Remapping plugin 'plugins/voicechat-bukkit-2.6.21.jar'...
-[20:38:29] [Paper Plugin Remapper Thread - 1/INFO]: [PluginRemapper] Remapping plugin 'plugins/mcaibridge-paper-1.0.0.jar'...
-[20:38:30] [Paper Plugin Remapper Thread - 1/INFO]: [PluginRemapper] Done remapping plugin 'plugins/mcaibridge-paper-1.0.0.jar' in 86ms.
-[20:38:30] [Paper Plugin Remapper Thread - 0/INFO]: [PluginRemapper] Done remapping plugin 'plugins/voicechat-bukkit-2.6.21.jar' in 177ms.
-[20:38:30] [ServerMain/INFO]: [PluginInitializerManager] Initialized 2 plugins
-[20:38:30] [ServerMain/INFO]: [PluginInitializerManager] Bukkit plugins (2):
+[21:34:35] [ServerMain/INFO]: [bootstrap] Running Java 21 (OpenJDK 64-Bit Server VM 21.0.12.1; Homebrew Homebrew) on Mac OS X 27.0 (aarch64)
+[21:34:35] [ServerMain/INFO]: [bootstrap] Loading Paper 1.21.11-132-ver/1.21.11@c5eb079 (2026-05-11T11:43:09Z) for Minecraft 1.21.11
+[21:34:35] [ServerMain/INFO]: [PluginInitializerManager] Initializing plugins...
+[21:34:35] [Paper Plugin Remapper Thread - 1/INFO]: [ReobfServer] Remapping server...
+[21:34:38] [Paper Plugin Remapper Thread - 1/INFO]: [ReobfServer] Done remapping server in 2755ms.
+[21:34:38] [Paper Plugin Remapper Thread - 1/INFO]: [PluginRemapper] Remapping plugin 'plugins/voicechat-bukkit-2.6.21.jar'...
+[21:34:38] [Paper Plugin Remapper Thread - 0/INFO]: [PluginRemapper] Remapping plugin 'plugins/mcaibridge-paper-1.0.0.jar'...
+[21:34:38] [Paper Plugin Remapper Thread - 0/INFO]: [PluginRemapper] Done remapping plugin 'plugins/mcaibridge-paper-1.0.0.jar' in 71ms.
+[21:34:38] [Paper Plugin Remapper Thread - 1/INFO]: [PluginRemapper] Done remapping plugin 'plugins/voicechat-bukkit-2.6.21.jar' in 146ms.
+[21:34:38] [ServerMain/INFO]: [PluginInitializerManager] Initialized 2 plugins
+[21:34:38] [ServerMain/INFO]: [PluginInitializerManager] Bukkit plugins (2):
  - MCAIBridge (1.0.0), voicechat (2.6.21)
-[20:38:32] [ServerMain/INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
-[20:38:32] [ServerMain/INFO]: Found new data pack file/bukkit, loading it automatically
-[20:38:32] [ServerMain/INFO]: Found new data pack paper, loading it automatically
-[20:38:32] [ServerMain/INFO]: No existing world data, creating new world
-[20:38:32] [ServerMain/INFO]: Loaded 1470 recipes
-[20:38:32] [ServerMain/INFO]: Loaded 1584 advancements
-[20:38:32] [ServerMain/INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
-[20:38:33] [ServerMain/INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 267.4ms
-[20:38:33] [Server thread/INFO]: Starting minecraft server version 1.21.11
-[20:38:33] [Server thread/INFO]: Loading properties
-[20:38:33] [Server thread/INFO]: This server is running Paper version 1.21.11-132-ver/1.21.11@c5eb079 (2026-05-11T11:43:09Z) (Implementing API version 1.21.11-R0.1-SNAPSHOT)
-[20:38:33] [Server thread/INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
-[20:38:33] [Server thread/INFO]: Using 4 threads for Netty based IO
-[20:38:33] [Server thread/INFO]: Server Ping Player Sample Count: 12
-[20:38:33] [Server thread/INFO]: [MoonriseCommon] Paper is using 2 worker threads, 1 I/O threads
-[20:38:33] [Server thread/INFO]: Default game type: SURVIVAL
-[20:38:33] [Server thread/INFO]: Generating keypair
-[20:38:33] [Server thread/INFO]: Starting Minecraft server on *:25565
-[20:38:34] [Server thread/INFO]: Paper: Using libdeflate (macOS ARM64 / Apple Silicon) compression from Velocity.
-[20:38:34] [Server thread/INFO]: Paper: Using native (macOS ARM64 / Apple Silicon) cipher from Velocity.
-[20:38:34] [Server thread/INFO]: [voicechat] Loading server plugin voicechat v2.6.21
-[20:38:34] [Server thread/INFO]: [MCAIBridge] Loading server plugin MCAIBridge v1.0.0
-[20:38:34] [Server thread/INFO]: Server permissions file permissions.yml is empty, ignoring it
-[20:38:34] [Server thread/WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
-[20:38:34] [Server thread/WARN]: The server will make no attempt to authenticate usernames. Beware.
-[20:38:34] [Server thread/WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
-[20:38:34] [Server thread/WARN]: To change this, set "online-mode" to "true" in the server.properties file.
-[20:38:34] [Server thread/INFO]: Preparing level "world"
-[20:38:34] [Server thread/INFO]: Selecting spawn point for world 'minecraft:overworld'...
-[20:38:34] [Server thread/INFO]: Selecting spawn point for world 'minecraft:the_nether'...
-[20:38:34] [Server thread/INFO]: Selecting spawn point for world 'minecraft:the_end'...
-[20:38:34] [Server thread/INFO]: Loading 0 persistent chunks for world 'minecraft:overworld'...
-[20:38:34] [Server thread/INFO]: Preparing spawn area: 100%
-[20:38:34] [Server thread/INFO]: Prepared spawn area in 221 ms
-[20:38:34] [Server thread/INFO]: Loading 0 persistent chunks for world 'minecraft:the_nether'...
-[20:38:34] [Server thread/INFO]: Preparing spawn area: 100%
-[20:38:34] [Server thread/INFO]: Prepared spawn area in 64 ms
-[20:38:34] [Server thread/INFO]: Loading 0 persistent chunks for world 'minecraft:the_end'...
-[20:38:34] [Server thread/INFO]: Preparing spawn area: 100%
-[20:38:34] [Server thread/INFO]: Prepared spawn area in 14 ms
-[20:38:34] [Server thread/INFO]: Done preparing level "world" (0.465s)
-[20:38:34] [Server thread/INFO]: [voicechat] Enabling voicechat v2.6.21
-[20:38:34] [Server thread/INFO]: [voicechat] Initializing compatibility for version 1.21.11-R0.1
-[20:38:34] [Server thread/INFO]: [voicechat] Compatibility version 20
-[20:38:34] [Server thread/INFO]: [voicechat] Successfully initialized commodore command completion
-[20:38:34] [Server thread/INFO]: [MCAIBridge] Enabling MCAIBridge v1.0.0
-[20:38:34] [Server thread/INFO]: [com.mcaibridge.paper.ApiServer] MCAI API 监听端口 8788
-[20:38:34] [Server thread/INFO]: [MCAIBridge] 已注册 Simple Voice Chat 语音中继 addon
-[20:38:34] [Server thread/INFO]: [MCAIBridge] MCAI Bridge 伴生插件已启用（API 端口 8788）
-[20:38:34] [Server thread/INFO]: [spark] Starting background profiler...
-[20:38:36] [Server thread/INFO]: Running delayed init tasks
-[20:38:36] [Server thread/INFO]: Done (11.410s)! For help, type "help"
-[20:38:36] [Server thread/INFO]: [voicechat] Loading plugins
-[20:38:36] [Server thread/INFO]: [voicechat] Loaded 1 plugin(s)
-[20:38:36] [Server thread/INFO]: [voicechat] Initializing plugins
-[20:38:36] [Server thread/INFO]: [voicechat] Initialized 1 plugin(s)
-[20:38:36] [Server thread/INFO]: [voicechat] Registering events for 'mcaibridge'
-[20:38:36] [Server thread/WARN]: [voicechat] Running in offline mode - Voice chat encryption is not secure!
-[20:38:36] [VoiceChatServerThread/INFO]: [voicechat] Voice chat server started at port 24454
-[20:38:39] [Paper Async Task Handler Thread - 1/WARN]: *************************************************************************************
-[20:38:39] [Paper Async Task Handler Thread - 1/WARN]: You are running the latest build for your Minecraft version (1.21.11)
-[20:38:39] [Paper Async Task Handler Thread - 1/WARN]: However, you are 4 release(s) behind the latest stable release (26.2)!
-[20:38:39] [Paper Async Task Handler Thread - 1/WARN]: It is recommended that you update as soon as possible
-[20:38:39] [Paper Async Task Handler Thread - 1/WARN]: https://papermc.io/downloads/paper
-[20:38:39] [Paper Async Task Handler Thread - 1/WARN]: *************************************************************************************
-[20:39:05] [mcai-api/INFO]: [MCAIBridge] 皮肤已存储: AI_Jane (classic) → http://192.168.3.55:8788/mcai/skinimg/ai_jane.png
-[20:39:05] [User Authenticator #0/INFO]: UUID of player AI_Jane is ee5baceb-c5c8-30bf-9f15-43bad3b03572
-[20:39:06] [Server thread/INFO]: AI_Jane joined the game
-[20:39:06] [Server thread/INFO]: AI_Jane[/127.0.0.1:52735] logged in with entity id 27 at ([world]37.5, 120.0, -22.5)
-[20:39:06] [Server thread/INFO]: [MCAIBridge] 诊断+0s: AI_Jane chatVisibility=FULL
-[20:39:17] [User Authenticator #0/INFO]: UUID of player TestPlayer is bb77495a-a740-3169-a238-69654c8bd2c1
-[20:39:17] [Server thread/INFO]: TestPlayer joined the game
-[20:39:17] [Server thread/INFO]: TestPlayer[/127.0.0.1:52738] logged in with entity id 66 at ([world]5.5, 118.0, 5.5)
-[20:39:17] [Server thread/INFO]: [MCAIBridge] 诊断+0s: TestPlayer chatVisibility=FULL
-[20:39:21] [Async Chat Thread - #0/INFO]: [Not Secure] <TestPlayer> @AI_Jane 你好
-[20:39:21] [Async Chat Thread - #0/INFO]: [Not Secure] <AI_Jane> [AI_Jane] 你好！我是 AI_Jane，收到: 你好（mock 回复：未配置 API Key）
-[20:39:21] [Server thread/INFO]: TestPlayer lost connection: Disconnected
-[20:39:21] [Server thread/INFO]: [voicechat] Disconnecting client TestPlayer
-[20:39:21] [Server thread/INFO]: TestPlayer left the game
-[20:39:36] [User Authenticator #0/INFO]: UUID of player TestPlayer is bb77495a-a740-3169-a238-69654c8bd2c1
-[20:39:36] [Server thread/INFO]: TestPlayer joined the game
-[20:39:36] [Server thread/INFO]: TestPlayer[/127.0.0.1:52748] logged in with entity id 85 at ([world]5.5, 118.0, 5.5)
-[20:39:36] [Server thread/INFO]: [MCAIBridge] 诊断+0s: TestPlayer chatVisibility=FULL
-[20:39:40] [Async Chat Thread - #0/INFO]: [Not Secure] <TestPlayer> @AI_Jane 走到 5 5
-[20:39:40] [Async Chat Thread - #0/INFO]: [Not Secure] <AI_Jane> [AI_Jane] 走向 (5, 5)
-[20:39:44] [Async Chat Thread - #0/INFO]: [Not Secure] <TestPlayer> @AI_Jane 走到 5 5
-[20:39:44] [Async Chat Thread - #0/INFO]: [Not Secure] <AI_Jane> [AI_Jane] 走向 (5, 5)
-[20:39:46] [Server thread/INFO]: [MCAIBridge] 诊断+40s: AI_Jane chatVisibility=FULL
-[20:39:48] [Async Chat Thread - #0/INFO]: [Not Secure] <TestPlayer> @AI_Jane 走到 5 5
-[20:39:48] [Async Chat Thread - #0/INFO]: [Not Secure] <AI_Jane> [AI_Jane] 走向 (5, 5)
-[20:39:52] [Server thread/INFO]: TestPlayer lost connection: Disconnected
-[20:39:52] [Server thread/INFO]: [voicechat] Disconnecting client TestPlayer
-[20:39:52] [Server thread/INFO]: TestPlayer left the game
-[20:40:26] [Server thread/INFO]: [MCAIBridge] 诊断+80s: AI_Jane chatVisibility=FULL
-[20:41:06] [Server thread/INFO]: [MCAIBridge] 诊断+120s: AI_Jane chatVisibility=FULL
-[20:41:18] [Server thread/INFO]: AI_Jane lost connection: Disconnected
-[20:41:18] [Server thread/INFO]: [voicechat] Disconnecting client AI_Jane
-[20:41:18] [Server thread/INFO]: AI_Jane left the game
-[20:41:19] [mcai-api/INFO]: [MCAIBridge] 皮肤已存储: AI_Jane (classic) → http://192.168.3.55:8788/mcai/skinimg/ai_jane.png
-[20:41:19] [User Authenticator #1/INFO]: UUID of player AI_Jane is ee5baceb-c5c8-30bf-9f15-43bad3b03572
-[20:41:19] [Server thread/INFO]: AI_Jane joined the game
-[20:41:19] [Server thread/INFO]: AI_Jane[/127.0.0.1:52783] logged in with entity id 131 at ([world]37.5, 120.0, -22.5)
-[20:41:19] [Server thread/INFO]: [MCAIBridge] 诊断+0s: AI_Jane chatVisibility=FULL
-[20:41:31] [User Authenticator #1/INFO]: UUID of player TestPlayer is bb77495a-a740-3169-a238-69654c8bd2c1
-[20:41:31] [Server thread/INFO]: TestPlayer joined the game
-[20:41:31] [Server thread/INFO]: TestPlayer[/127.0.0.1:52797] logged in with entity id 134 at ([world]5.5, 118.0, 5.5)
-[20:41:31] [Server thread/INFO]: [MCAIBridge] 诊断+0s: TestPlayer chatVisibility=FULL
-[20:41:35] [Async Chat Thread - #2/INFO]: [Not Secure] <TestPlayer> @AI_Jane 走到 5 5
-[20:41:35] [Async Chat Thread - #2/INFO]: [Not Secure] <AI_Jane> [AI_Jane] 走向 (5, 5)
-[20:41:36] [Server thread/INFO]: [MCAIBridge] 诊断+120s: TestPlayer chatVisibility=FULL
-[20:41:39] [Async Chat Thread - #2/INFO]: [Not Secure] <TestPlayer> @AI_Jane 走到 5 5
-[20:41:39] [Async Chat Thread - #2/INFO]: [Not Secure] <AI_Jane> [AI_Jane] 走向 (5, 5)
-[20:41:43] [Async Chat Thread - #2/INFO]: [Not Secure] <TestPlayer> @AI_Jane 走到 5 5
-[20:41:43] [Async Chat Thread - #2/INFO]: [Not Secure] <AI_Jane> [AI_Jane] 走向 (5, 5)
-[20:41:46] [Server thread/INFO]: [MCAIBridge] 诊断+160s: AI_Jane chatVisibility=FULL
-[20:41:47] [Server thread/INFO]: TestPlayer lost connection: Disconnected
-[20:41:47] [Server thread/INFO]: [voicechat] Disconnecting client TestPlayer
-[20:41:47] [Server thread/INFO]: TestPlayer left the game
-[20:41:59] [Server thread/INFO]: [MCAIBridge] 诊断+40s: AI_Jane chatVisibility=FULL
-[20:42:22] [Server thread/INFO]: AI_Jane lost connection: Disconnected
-[20:42:22] [Server thread/INFO]: [voicechat] Disconnecting client AI_Jane
-[20:42:22] [Server thread/INFO]: AI_Jane left the game
-[20:42:23] [mcai-api/INFO]: [MCAIBridge] 皮肤已存储: AI_Jane (classic) → http://192.168.3.55:8788/mcai/skinimg/ai_jane.png
-[20:42:23] [User Authenticator #1/INFO]: UUID of player AI_Jane is ee5baceb-c5c8-30bf-9f15-43bad3b03572
-[20:42:23] [Server thread/INFO]: AI_Jane joined the game
-[20:42:23] [Server thread/INFO]: AI_Jane[/127.0.0.1:52820] logged in with entity id 167 at ([world]37.5, 120.0, -22.5)
-[20:42:23] [Server thread/INFO]: [MCAIBridge] 诊断+0s: AI_Jane chatVisibility=FULL
-[20:42:26] [Server thread/INFO]: [MCAIBridge] 诊断+200s: AI_Jane chatVisibility=FULL
-[20:42:35] [User Authenticator #1/INFO]: UUID of player TestPlayer is bb77495a-a740-3169-a238-69654c8bd2c1
-[20:42:35] [Server thread/INFO]: TestPlayer joined the game
-[20:42:35] [Server thread/INFO]: TestPlayer[/127.0.0.1:52824] logged in with entity id 169 at ([world]5.5, 118.0, 5.5)
-[20:42:35] [Server thread/INFO]: [MCAIBridge] 诊断+0s: TestPlayer chatVisibility=FULL
-[20:42:37] [Server thread/INFO]: [MCAIBridge] 诊断+200s: TestPlayer chatVisibility=FULL
-[20:42:39] [Async Chat Thread - #2/INFO]: [Not Secure] <TestPlayer> @AI_Jane 走到 5 5
-[20:42:39] [Async Chat Thread - #2/INFO]: [Not Secure] <AI_Jane> [AI_Jane] 走向 (5, 5)
-[20:42:39] [Server thread/INFO]: [MCAIBridge] 诊断+80s: AI_Jane chatVisibility=FULL
-[20:42:43] [Async Chat Thread - #2/INFO]: [Not Secure] <TestPlayer> @AI_Jane 走到 5 5
-[20:42:43] [Async Chat Thread - #2/INFO]: [Not Secure] <AI_Jane> [AI_Jane] 走向 (5, 5)
-[20:42:47] [Async Chat Thread - #2/INFO]: [Not Secure] <TestPlayer> @AI_Jane 走到 5 5
-[20:42:47] [Async Chat Thread - #2/INFO]: [Not Secure] <AI_Jane> [AI_Jane] 走向 (5, 5)
-[20:42:51] [Server thread/INFO]: TestPlayer lost connection: Disconnected
-[20:42:51] [Server thread/INFO]: [voicechat] Disconnecting client TestPlayer
-[20:42:51] [Server thread/INFO]: TestPlayer left the game
-[20:43:03] [Server thread/INFO]: [MCAIBridge] 诊断+40s: AI_Jane chatVisibility=FULL
-[20:43:19] [Server thread/INFO]: [MCAIBridge] 诊断+120s: AI_Jane chatVisibility=FULL
-[20:43:43] [Server thread/INFO]: [MCAIBridge] 诊断+80s: AI_Jane chatVisibility=FULL
-[20:43:59] [Server thread/INFO]: [MCAIBridge] 诊断+160s: AI_Jane chatVisibility=FULL
-[20:44:15] [Server thread/INFO]: AI_Jane lost connection: Disconnected
-[20:44:15] [Server thread/INFO]: [voicechat] Disconnecting client AI_Jane
-[20:44:15] [Server thread/INFO]: AI_Jane left the game
-[20:44:16] [mcai-api/INFO]: [MCAIBridge] 皮肤已存储: AI_Jane (classic) → http://192.168.3.55:8788/mcai/skinimg/ai_jane.png
-[20:44:16] [User Authenticator #2/INFO]: UUID of player AI_Jane is ee5baceb-c5c8-30bf-9f15-43bad3b03572
-[20:44:17] [Server thread/INFO]: AI_Jane joined the game
-[20:44:17] [Server thread/INFO]: AI_Jane[/127.0.0.1:52945] logged in with entity id 210 at ([world]37.5, 120.0, -22.5)
-[20:44:17] [Server thread/INFO]: [MCAIBridge] 诊断+0s: AI_Jane chatVisibility=FULL
-[20:44:23] [Server thread/INFO]: [MCAIBridge] 诊断+120s: AI_Jane chatVisibility=FULL
-[20:44:28] [User Authenticator #2/INFO]: UUID of player TestPlayer is bb77495a-a740-3169-a238-69654c8bd2c1
-[20:44:28] [Server thread/INFO]: TestPlayer joined the game
-[20:44:28] [Server thread/INFO]: TestPlayer[/127.0.0.1:52951] logged in with entity id 220 at ([world]5.5, 118.0, 5.5)
-[20:44:28] [Server thread/INFO]: [MCAIBridge] 诊断+0s: TestPlayer chatVisibility=FULL
-[20:44:32] [Async Chat Thread - #4/INFO]: [Not Secure] <TestPlayer> @AI_Jane 走到 5 5
-[20:44:32] [Async Chat Thread - #4/INFO]: [Not Secure] <AI_Jane> [AI_Jane] 走向 (5, 5)
-[20:44:34] [Server thread/INFO]: AI_Jane lost connection: Disconnected
-[20:44:34] [Server thread/INFO]: [voicechat] Disconnecting client AI_Jane
-[20:44:34] [Server thread/INFO]: AI_Jane left the game
-[20:44:34] [Server thread/INFO]: TestPlayer lost connection: Disconnected
-[20:44:34] [Server thread/INFO]: [voicechat] Disconnecting client TestPlayer
-[20:44:34] [Server thread/INFO]: TestPlayer left the game
-[20:45:32] [mcai-api/INFO]: [MCAIBridge] 皮肤已存储: AI_Jane (classic) → http://192.168.3.55:8788/mcai/skinimg/ai_jane.png
-[20:45:32] [User Authenticator #3/INFO]: UUID of player AI_Jane is ee5baceb-c5c8-30bf-9f15-43bad3b03572
-[20:45:32] [Server thread/INFO]: AI_Jane joined the game
-[20:45:32] [Server thread/INFO]: AI_Jane[/127.0.0.1:52962] logged in with entity id 246 at ([world]37.5, 120.0, -22.5)
-[20:45:32] [Server thread/INFO]: [MCAIBridge] 诊断+0s: AI_Jane chatVisibility=FULL
-[20:45:37] [Server thread/INFO]: [MCAIBridge] 诊断+80s: AI_Jane chatVisibility=FULL
-[20:45:43] [Server thread/INFO]: [MCAIBridge] 诊断+200s: AI_Jane chatVisibility=FULL
-[20:45:55] [User Authenticator #3/INFO]: UUID of player TestPlayer is bb77495a-a740-3169-a238-69654c8bd2c1
-[20:45:55] [Server thread/INFO]: TestPlayer joined the game
-[20:45:55] [Server thread/INFO]: TestPlayer[/127.0.0.1:52970] logged in with entity id 298 at ([world]5.5, 118.0, 5.5)
-[20:45:55] [Server thread/INFO]: [MCAIBridge] 诊断+0s: TestPlayer chatVisibility=FULL
-[20:45:55] [Server thread/INFO]: [MCAIBridge] 诊断+200s: TestPlayer chatVisibility=FULL
-[20:45:59] [Async Chat Thread - #6/INFO]: [Not Secure] <TestPlayer> @AI_Jane 你好
-[20:45:59] [Async Chat Thread - #6/INFO]: [Not Secure] <AI_Jane> [AI_Jane] 你好！我是 AI_Jane，收到: 你好（mock 回复：未配置 API Key）
-[20:45:59] [Server thread/INFO]: TestPlayer lost connection: Disconnected
-[20:45:59] [Server thread/INFO]: [voicechat] Disconnecting client TestPlayer
-[20:45:59] [Server thread/INFO]: TestPlayer left the game
-[20:46:12] [Server thread/INFO]: [MCAIBridge] 诊断+40s: AI_Jane chatVisibility=FULL
-[20:46:17] [Server thread/INFO]: [MCAIBridge] 诊断+120s: AI_Jane chatVisibility=FULL
-[20:46:52] [Server thread/INFO]: [MCAIBridge] 诊断+80s: AI_Jane chatVisibility=FULL
-[20:46:57] [Server thread/INFO]: [MCAIBridge] 诊断+160s: AI_Jane chatVisibility=FULL
-[20:47:32] [Server thread/INFO]: [MCAIBridge] 诊断+120s: AI_Jane chatVisibility=FULL
-[20:47:37] [Server thread/INFO]: [MCAIBridge] 诊断+200s: AI_Jane chatVisibility=FULL
-[20:48:12] [Server thread/INFO]: [MCAIBridge] 诊断+160s: AI_Jane chatVisibility=FULL
-[20:48:52] [Server thread/INFO]: [MCAIBridge] 诊断+200s: AI_Jane chatVisibility=FULL
-[20:55:08] [Server thread/INFO]: AI_Jane lost connection: Disconnected
-[20:55:08] [Server thread/INFO]: [voicechat] Disconnecting client AI_Jane
-[20:55:08] [Server thread/INFO]: AI_Jane left the game
-[20:55:09] [mcai-api/INFO]: [MCAIBridge] 皮肤已存储: AI_Jane (classic) → http://192.168.3.55:8788/mcai/skinimg/ai_jane.png
-[20:55:10] [User Authenticator #4/INFO]: UUID of player AI_Jane is ee5baceb-c5c8-30bf-9f15-43bad3b03572
-[20:55:10] [Server thread/INFO]: AI_Jane joined the game
-[20:55:10] [Server thread/INFO]: AI_Jane[/127.0.0.1:53272] logged in with entity id 504 at ([world]37.5, 120.0, -22.5)
-[20:55:10] [Server thread/INFO]: [MCAIBridge] 诊断+0s: AI_Jane chatVisibility=FULL
-[20:55:21] [User Authenticator #4/INFO]: UUID of player TestPlayer is bb77495a-a740-3169-a238-69654c8bd2c1
-[20:55:21] [Server thread/INFO]: TestPlayer joined the game
-[20:55:21] [Server thread/INFO]: TestPlayer[/127.0.0.1:53275] logged in with entity id 508 at ([world]5.5, 118.0, 5.5)
-[20:55:21] [Server thread/INFO]: [MCAIBridge] 诊断+0s: TestPlayer chatVisibility=FULL
-[20:55:25] [Async Chat Thread - #8/INFO]: [Not Secure] <TestPlayer> @AI_Jane 你好
-[20:55:25] [Async Chat Thread - #8/INFO]: [Not Secure] <AI_Jane> [AI_Jane] 你好！我是 AI_Jane，收到: 你好（mock 回复：未配置 API Key）
-[20:55:25] [Server thread/INFO]: TestPlayer lost connection: Disconnected
-[20:55:25] [Server thread/INFO]: [voicechat] Disconnecting client TestPlayer
-[20:55:25] [Server thread/INFO]: TestPlayer left the game
-[20:55:50] [Server thread/INFO]: [MCAIBridge] 诊断+40s: AI_Jane chatVisibility=FULL
-[20:56:03] [Server thread/INFO]: AI_Jane lost connection: Disconnected
-[20:56:03] [Server thread/INFO]: [voicechat] Disconnecting client AI_Jane
-[20:56:03] [Server thread/INFO]: AI_Jane left the game
-[20:56:04] [mcai-api/INFO]: [MCAIBridge] 皮肤已存储: AI_Jane (classic) → http://192.168.3.55:8788/mcai/skinimg/ai_jane.png
-[20:56:05] [User Authenticator #4/INFO]: UUID of player AI_Jane is ee5baceb-c5c8-30bf-9f15-43bad3b03572
-[20:56:05] [Server thread/INFO]: AI_Jane joined the game
-[20:56:05] [Server thread/INFO]: AI_Jane[/127.0.0.1:53286] logged in with entity id 530 at ([world]37.5, 120.0, -22.5)
-[20:56:05] [Server thread/INFO]: [MCAIBridge] 诊断+0s: AI_Jane chatVisibility=FULL
-[20:56:17] [User Authenticator #4/INFO]: UUID of player TestPlayer is bb77495a-a740-3169-a238-69654c8bd2c1
-[20:56:17] [Server thread/INFO]: TestPlayer joined the game
-[20:56:17] [Server thread/INFO]: TestPlayer[/127.0.0.1:53288] logged in with entity id 535 at ([world]5.5, 118.0, 5.5)
-[20:56:17] [Server thread/INFO]: [MCAIBridge] 诊断+0s: TestPlayer chatVisibility=FULL
-[20:56:21] [Async Chat Thread - #8/INFO]: [Not Secure] <TestPlayer> @AI_Jane 你好
-[20:56:21] [Async Chat Thread - #8/INFO]: [Not Secure] <AI_Jane> [AI_Jane] 你好！我是 AI_Jane，收到: 你好（mock 回复：未配置 API Key）
-[20:56:21] [Server thread/INFO]: TestPlayer lost connection: Disconnected
-[20:56:21] [Server thread/INFO]: [voicechat] Disconnecting client TestPlayer
-[20:56:21] [Server thread/INFO]: TestPlayer left the game
-[20:56:30] [Server thread/INFO]: [MCAIBridge] 诊断+80s: AI_Jane chatVisibility=FULL
-[20:56:45] [Server thread/INFO]: [MCAIBridge] 诊断+40s: AI_Jane chatVisibility=FULL
-[20:57:10] [Server thread/INFO]: [MCAIBridge] 诊断+120s: AI_Jane chatVisibility=FULL
-[20:57:25] [Server thread/INFO]: [MCAIBridge] 诊断+80s: AI_Jane chatVisibility=FULL
-[20:57:50] [Server thread/INFO]: [MCAIBridge] 诊断+160s: AI_Jane chatVisibility=FULL
-[20:58:05] [Server thread/INFO]: [MCAIBridge] 诊断+120s: AI_Jane chatVisibility=FULL
-[20:58:30] [Server thread/INFO]: [MCAIBridge] 诊断+200s: AI_Jane chatVisibility=FULL
-[20:58:45] [Server thread/INFO]: [MCAIBridge] 诊断+160s: AI_Jane chatVisibility=FULL
-[20:59:25] [Server thread/INFO]: [MCAIBridge] 诊断+200s: AI_Jane chatVisibility=FULL
-[21:13:16] [Server thread/INFO]: AI_Jane lost connection: Disconnected
-[21:13:16] [Server thread/INFO]: [voicechat] Disconnecting client AI_Jane
-[21:13:16] [Server thread/INFO]: AI_Jane left the game
+[21:34:40] [ServerMain/INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[21:34:41] [ServerMain/INFO]: Loaded 1470 recipes
+[21:34:41] [ServerMain/INFO]: Loaded 1584 advancements
+[21:34:41] [ServerMain/INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[21:34:41] [ServerMain/INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 193.2ms
+[21:34:41] [Server thread/INFO]: Starting minecraft server version 1.21.11
+[21:34:41] [Server thread/INFO]: Loading properties
+[21:34:41] [Server thread/INFO]: This server is running Paper version 1.21.11-132-ver/1.21.11@c5eb079 (2026-05-11T11:43:09Z) (Implementing API version 1.21.11-R0.1-SNAPSHOT)
+[21:34:41] [Server thread/INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[21:34:41] [Server thread/INFO]: Using 4 threads for Netty based IO
+[21:34:41] [Server thread/INFO]: Server Ping Player Sample Count: 12
+[21:34:42] [Server thread/INFO]: [MoonriseCommon] Paper is using 2 worker threads, 1 I/O threads
+[21:34:42] [Server thread/INFO]: Default game type: SURVIVAL
+[21:34:42] [Server thread/INFO]: Generating keypair
+[21:34:42] [Server thread/INFO]: Starting Minecraft server on *:25565
+[21:34:42] [Server thread/INFO]: Paper: Using libdeflate (macOS ARM64 / Apple Silicon) compression from Velocity.
+[21:34:42] [Server thread/INFO]: Paper: Using native (macOS ARM64 / Apple Silicon) cipher from Velocity.
+[21:34:42] [Server thread/INFO]: [voicechat] Loading server plugin voicechat v2.6.21
+[21:34:42] [Server thread/INFO]: [MCAIBridge] Loading server plugin MCAIBridge v1.0.0
+[21:34:42] [Server thread/INFO]: Server permissions file permissions.yml is empty, ignoring it
+[21:34:42] [Server thread/WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[21:34:42] [Server thread/WARN]: The server will make no attempt to authenticate usernames. Beware.
+[21:34:42] [Server thread/WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[21:34:42] [Server thread/WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[21:34:42] [Server thread/INFO]: Preparing level "world"
+[21:34:43] [Server thread/INFO]: Loading 0 persistent chunks for world 'minecraft:overworld'...
+[21:34:43] [Server thread/INFO]: Prepared spawn area in 1 ms
+[21:34:43] [Server thread/INFO]: Loading 0 persistent chunks for world 'minecraft:the_nether'...
+[21:34:43] [Server thread/INFO]: Prepared spawn area in 0 ms
+[21:34:43] [Server thread/INFO]: Loading 0 persistent chunks for world 'minecraft:the_end'...
+[21:34:43] [Server thread/INFO]: Prepared spawn area in 0 ms
+[21:34:43] [Server thread/INFO]: Done preparing level "world" (0.294s)
+[21:34:43] [Server thread/INFO]: [voicechat] Enabling voicechat v2.6.21
+[21:34:43] [Server thread/INFO]: [voicechat] Initializing compatibility for version 1.21.11-R0.1
+[21:34:43] [Server thread/INFO]: [voicechat] Compatibility version 20
+[21:34:43] [Server thread/INFO]: [voicechat] Successfully initialized commodore command completion
+[21:34:43] [Server thread/INFO]: [MCAIBridge] Enabling MCAIBridge v1.0.0
+[21:34:43] [Server thread/INFO]: [com.mcaibridge.paper.ApiServer] MCAI API 监听端口 8788
+[21:34:43] [Server thread/INFO]: [MCAIBridge] 已注册 Simple Voice Chat 语音中继 addon
+[21:34:43] [Server thread/INFO]: [MCAIBridge] MCAI Bridge 伴生插件已启用（API 端口 8788）
+[21:34:43] [Server thread/INFO]: [spark] Starting background profiler...
+[21:34:44] [Server thread/INFO]: Running delayed init tasks
+[21:34:44] [Server thread/INFO]: Done (10.200s)! For help, type "help"
+[21:34:44] [Server thread/INFO]: [voicechat] Loading plugins
+[21:34:44] [Server thread/INFO]: [voicechat] Loaded 1 plugin(s)
+[21:34:44] [Server thread/INFO]: [voicechat] Initializing plugins
+[21:34:44] [Server thread/INFO]: [voicechat] Initialized 1 plugin(s)
+[21:34:44] [Server thread/INFO]: [voicechat] Registering events for 'mcaibridge'
+[21:34:44] [Server thread/WARN]: [voicechat] Running in offline mode - Voice chat encryption is not secure!
+[21:34:44] [VoiceChatServerThread/INFO]: [voicechat] Voice chat server started at port 24454
+[21:34:46] [Paper Async Task Handler Thread - 1/WARN]: *************************************************************************************
+[21:34:46] [Paper Async Task Handler Thread - 1/WARN]: You are running the latest build for your Minecraft version (1.21.11)
+[21:34:46] [Paper Async Task Handler Thread - 1/WARN]: However, you are 4 release(s) behind the latest stable release (26.2)!
+[21:34:46] [Paper Async Task Handler Thread - 1/WARN]: It is recommended that you update as soon as possible
+[21:34:46] [Paper Async Task Handler Thread - 1/WARN]: https://papermc.io/downloads/paper
+[21:34:46] [Paper Async Task Handler Thread - 1/WARN]: *************************************************************************************
+[21:35:24] [mcai-api/INFO]: [MCAIBridge] 皮肤已存储: AI_Jane (classic) → http://192.168.3.55:8788/mcai/skinimg/ai_jane.png
+[21:35:24] [User Authenticator #0/INFO]: UUID of player AI_Jane is ee5baceb-c5c8-30bf-9f15-43bad3b03572
+[21:35:25] [Server thread/INFO]: AI_Jane joined the game
+[21:35:25] [Server thread/INFO]: AI_Jane[/127.0.0.1:54572] logged in with entity id 26 at ([world]37.5, 120.0, -22.5)
