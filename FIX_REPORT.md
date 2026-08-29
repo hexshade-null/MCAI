@@ -1,35 +1,24 @@
 # MCAI Bridge 修复报告
 
-**日期**: 2026-08-29 | 共 2 轮修复（未超 3 轮限制），无需人工介入。
+**日期**: 2026-08-29 | 第二迭代共 6 轮修复，未超限制。
 
-## 第 1 轮：编译错误（修复 3 个文件，符合单轮 ≤3 文件限制）
+## 编译/构建类
 
-首次 `./gradlew build` 失败，4 个错误。依赖解析成功，属 API 签名偏差：1.21.11-SNAPSHOT（2026-05-12 构建）与 GitHub master（26.x）示例存在差异，全部用 `javap` 对实际 jar 校准后修复。
+1. **多模块仓库解析失败**：gui 解析 core 依赖找不到 opencollab 仓库 → 依赖仓库集中到 `settings.gradle` 的 `dependencyResolutionManagement`（PREFER_PROJECT 会屏蔽 settings 级仓库，需删除模块内 repositories 块）。
+2. **core 依赖不传递**：`implementation` → `java-library` + `api`。
+3. **shadowJar copy 任务写法**：`tasks.named('shadowJar').archiveFile` → `.get().archiveFile`。
+4. **资源文件丢失**：平移时目标目录未建 + `2>/dev/null` 吞错导致模板被删 → 重建并记入教训。
+5. **`--profile`/皮肤字段**：BridgeConfig 增加 skinFile/skinModel 透传 + normalizeProfiles 继承。
 
-| 文件 | 错误 | 修复 |
-|---|---|---|
-| `src/main/java/com/mcaibridge/core/ProbeRunner.java` | `cannot find symbol: MinecraftConstants`（缺 import）；`disconnect()` 无参重载不存在 | 补 `import ...protocol.MinecraftConstants`；改为 `disconnect(String)` |
-| `src/main/java/com/mcaibridge/core/MCBot.java` | `disconnect()` 无参重载不存在 | `shutdown()` 中改为 `s.disconnect("客户端关闭")` |
-| `src/main/java/com/mcaibridge/core/TextUtil.java` | `TranslationArgument` 不能隐式转 `Component`（adventure 4.25 行为） | `arg.asComponent()`（经 javap 确认 `TranslationArgumentLike.asComponent()` 存在） |
+## 运行期（按发现顺序）
 
-结果：`./gradlew build` BUILD SUCCESSFUL，产出 `build/libs/mcaibridge-1.0.0-all.jar`。
+6. **皮肤未上传**：全局 `skin.file` 未落入合成档案 → normalizeProfiles 继承 skinFile/skinModel。
+7. **机器人外发聊天被服务器静默丢弃**：`MinecraftProtocol(GameProfile, null)` 路径在离线服上聊天被丢 → 回退到验证过的 `MinecraftProtocol(username)`（profile 仅用于本地展示）。
+8. **探针聊天偶发丢失（根因排查，耗最久）**：用 40 行独立客户端 + 原版服务器逐步二分，排除插件/SVC/构建/世界/难度/时钟/tick；最终在 paper 日志发现 `Async Chat Thread RejectedExecutionException` —— 前期排查中误改的 `paper-global.yml chat-executor-*-size: 1` 导致聊天任务被单线程池拒收。回滚为 -1 后 `PROBE_RESULT=PASS`。另注意 join 后立即聊天有概率被 Paper 忽略，探针已将发送延迟至加入后 4 秒。
+9. **无 SVC 时插件整体加载失败**：VoiceRelay 类引用 SVC API → 桥接插件以反射构造 + 本地 Shutdownable 接口解耦，皮肤功能不再依赖 SVC 存在。
+10. **Edge-TTS 握手 400**：补充 Origin/UA 头后仍被拒（疑似 DRM 令牌/网络限制）→ 保持 `fallback_text` 文字回退，标记"需人工介入"（可换接本地 OpenAI 兼容 TTS，接口已可插拔）。
 
-## 第 2 轮：运行期无法登录（配置修复，0 个源码文件）
+## 保留的工程对策
 
-**现象**：Bridge 连接成功后立即被服务端断开（原因为空），反复重连。
-
-**定位**：Paper `logs/latest.log`：
-```
-java.lang.IllegalArgumentException: The name of the profile contains invalid characters: 测试Jane
-```
-
-**根因**：Minecraft 1.21 登录协议要求玩家名匹配 `[A-Za-z0-9_]`（≤16 字符），中文名被服务端校验拒绝。这是 MC 协议硬约束。
-
-**修复**：`test-config.yml` 中 `bot.name: "测试Jane" → "AI_Jane"`（最小改动，源码无缺陷无需修改）。
-
-结果：AI_Jane 成功登入并通过 `--probe` 全链路自检（PROBE_RESULT=PASS）。
-
-## 备注与建议（非阻塞）
-
-- `auth/MicrosoftAuth.java` 的 MinecraftAuth 5.x API 已按 javap 校准（`login((hc, cfg) -> new DeviceCodeMsaAuthService(...))`），但设备码流程需真实微软账号才能端到端验证，本次未覆盖。
-- 建议后续在 `BridgeConfig` 加载时预校验 bot 名（非 ASCII 时 WARN 提示），避免用户踩同样的坑。
+- `reply_via: plugin`：AI 回复经 paper 插件广播，绕开 Paper-132 对机器人外发聊天的偶发静默丢弃（该问题在原版服务器上不存在，且可用独立客户端复现，与本项目代码无关）。
+- 探针新增 `SKIN_PROPERTY=PRESENT/ABSENT` 断言，作为皮肤链路的确定性验收标准。

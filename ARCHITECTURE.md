@@ -58,3 +58,43 @@ Minecraft 1.21.11 AI 玩家接入工具。协议库：MCProtocolLib（GeyserMC �
 - 1.21.11 签名聊天：离线客户端无签名密钥 → 发送未签名聊天（salt=0, signature=null）。服务端需 `online-mode=false` 且 `enforce-secure-profile=false`（测试服务端已按此配置）。
 - `ServerboundChatPacket` 构造参数以 1.21.11-SNAPSHOT 实际 jar 为准（master 已加 checksum 参数）；编译期用 javap 校准。
 - fat jar 含 JavaFX mac-aarch64 natives，仅在 macOS arm64 上 `java -jar` 可用（项目目标平台即此）。
+
+---
+
+# 第二迭代增量（2026-08-29）：多模块 + 皮肤 + 语音 + PCL GUI
+
+## 模块重构
+
+```
+settings.gradle: include 'core','gui','paper'（依赖仓库集中在 settings 管理）
+core/  java-library: config、auth、core、voice、skin（无 GUI 依赖）
+gui/   application+shadow+javafx: Main、gui/*、pcl.css；depends(core)
+paper/ java: BridgePlugin、SkinService、ApiServer、SkinLoginListener、VoiceRelay、AudioUtil（仅 paper-api + SVC API，编译期隔离）
+```
+根 `build/libs/mcaibridge-1.0.0-all.jar` 路径由 gui 的 build 任务 copy 保持不变。
+
+## 皮肤链路
+
+GUI 选择 PNG（64x64/64x32 校验，SkinPreview 平面预览）→ OfflineAuth 注入 textures 属性（客户端侧，展示用途）→ 连接时 SkinManager.upload → paper 插件 ApiServer(8788) `POST /mcai/skin` 存储 → SkinLoginListener 在 AsyncPlayerPreLoginEvent 注入 textures（服务端权威，全部原版客户端可见）→ `GET /mcai/skinimg/<name>.png` 供客户端拉取皮肤图。
+
+## 语音链路（SVC 中继模式）
+
+```
+玩家麦克风 → SVC MicrophonePacketEvent → OpusDecoder → 能量VAD(静音900ms切句,上限12s)
+→ HTTP POST /mcai/voice(48k mono WAV) → core VoiceServer: AsrEngine → AIBrain → TtsEngine
+→ {asr, reply, audio(base64 WAV 48k)} → 插件 SVC AudioPlayer 广播(all|nearby) + 文字播报
+```
+AsrEngine: `MockAsrEngine`（默认）/ `WhisperHttpAsrEngine`（OpenAI 兼容 /audio/transcriptions）。
+TtsEngine: `EdgeTtsEngine`（WSS+Sec-MS-GEC，失败回退文字）/ `OffTtsEngine`。
+Opus 编解码使用 SVC API 自带 `createEncoder/createDecoder`（插件侧），core 定义 OpusCodec 扩展点。
+
+## GUI（PCL 风格）
+
+pcl.css：#1E1E2E 暗底 / #2A2B3A 圆角 12 卡片 / rgba 半透明毛玻璃近似 / 状态灯（绿黄红灰）/ hover 缩放动画。
+MainWindow：Logo 区 + 快速开始 + AI 玩家卡片列表（ProfileCard/ProfileDialog，多档案=多 MCBot 实例）+ 可折叠日志。
+多档案：`players[]` ↔ PlayerProfile，`BridgeConfig.merge(profile)` 产出兼容旧类的生效配置。
+
+## 兼容性
+
+- `players[]` 缺省时由旧字段合成单档案；旧 config.yml 无需修改。
+- 根目录 fat JAR 路径与启动方式不变；新增 `--profile <名>`。
