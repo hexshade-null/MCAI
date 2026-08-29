@@ -59,7 +59,7 @@ players:                                        # 多 AI 玩家（GUI 卡片列�
 玩家按住说话 → SVC插件捕获 → Opus解码+静音切句 → HTTP → core(ASR→AI→TTS) → 插件 SVC AudioPlayer 全服广播
 ```
 
-安装：把 `plugins/voicechat-bukkit-*.jar`（Modrinth 下载）与 `mcaibridge-paper-1.0.0.jar` 放入服务器 `plugins/`，插件 `config.yml` 里 `voice.bridge_url` 指向 bridge 的 8787 端口。ASR 用 OpenAI 兼容 HTTP 服务（Groq / faster-whisper-server 均可）；TTS 默认 Edge-TTS（免费，若网络不通自动回退文字回复）。
+安装：把 `plugins/voicechat-bukkit-*.jar`（Modrinth 下载）与 `mcaibridge-paper-1.0.0.jar` 放入服务器 `plugins/`，插件 `config.yml` 里 `voice.bridge_url` 指向 bridge 的 8787 端口。ASR 用 OpenAI 兼容 HTTP 服务（Groq / faster-whisper-server 均可）；TTS 默认 Edge-TTS（免费，（默认，见 config.template.yml；Edge-TTS 备选））。
 
 ## 已知注意事项
 
