@@ -197,3 +197,45 @@
 [20:45:59] [Server thread/INFO]: TestPlayer left the game
 [20:46:12] [Server thread/INFO]: [MCAIBridge] 诊断+40s: AI_Jane chatVisibility=FULL
 [20:46:17] [Server thread/INFO]: [MCAIBridge] 诊断+120s: AI_Jane chatVisibility=FULL
+[20:46:52] [Server thread/INFO]: [MCAIBridge] 诊断+80s: AI_Jane chatVisibility=FULL
+[20:46:57] [Server thread/INFO]: [MCAIBridge] 诊断+160s: AI_Jane chatVisibility=FULL
+[20:47:32] [Server thread/INFO]: [MCAIBridge] 诊断+120s: AI_Jane chatVisibility=FULL
+[20:47:37] [Server thread/INFO]: [MCAIBridge] 诊断+200s: AI_Jane chatVisibility=FULL
+[20:48:12] [Server thread/INFO]: [MCAIBridge] 诊断+160s: AI_Jane chatVisibility=FULL
+[20:48:52] [Server thread/INFO]: [MCAIBridge] 诊断+200s: AI_Jane chatVisibility=FULL
+[20:55:08] [Server thread/INFO]: AI_Jane lost connection: Disconnected
+[20:55:08] [Server thread/INFO]: [voicechat] Disconnecting client AI_Jane
+[20:55:08] [Server thread/INFO]: AI_Jane left the game
+[20:55:09] [mcai-api/INFO]: [MCAIBridge] 皮肤已存储: AI_Jane (classic) → http://192.168.3.55:8788/mcai/skinimg/ai_jane.png
+[20:55:10] [User Authenticator #4/INFO]: UUID of player AI_Jane is ee5baceb-c5c8-30bf-9f15-43bad3b03572
+[20:55:10] [Server thread/INFO]: AI_Jane joined the game
+[20:55:10] [Server thread/INFO]: AI_Jane[/127.0.0.1:53272] logged in with entity id 504 at ([world]37.5, 120.0, -22.5)
+[20:55:10] [Server thread/INFO]: [MCAIBridge] 诊断+0s: AI_Jane chatVisibility=FULL
+[20:55:21] [User Authenticator #4/INFO]: UUID of player TestPlayer is bb77495a-a740-3169-a238-69654c8bd2c1
+[20:55:21] [Server thread/INFO]: TestPlayer joined the game
+[20:55:21] [Server thread/INFO]: TestPlayer[/127.0.0.1:53275] logged in with entity id 508 at ([world]5.5, 118.0, 5.5)
+[20:55:21] [Server thread/INFO]: [MCAIBridge] 诊断+0s: TestPlayer chatVisibility=FULL
+[20:55:25] [Async Chat Thread - #8/INFO]: [Not Secure] <TestPlayer> @AI_Jane 你好
+[20:55:25] [Async Chat Thread - #8/INFO]: [Not Secure] <AI_Jane> [AI_Jane] 你好！我是 AI_Jane，收到: 你好（mock 回复：未配置 API Key）
+[20:55:25] [Server thread/INFO]: TestPlayer lost connection: Disconnected
+[20:55:25] [Server thread/INFO]: [voicechat] Disconnecting client TestPlayer
+[20:55:25] [Server thread/INFO]: TestPlayer left the game
+[20:55:50] [Server thread/INFO]: [MCAIBridge] 诊断+40s: AI_Jane chatVisibility=FULL
+[20:56:03] [Server thread/INFO]: AI_Jane lost connection: Disconnected
+[20:56:03] [Server thread/INFO]: [voicechat] Disconnecting client AI_Jane
+[20:56:03] [Server thread/INFO]: AI_Jane left the game
+[20:56:04] [mcai-api/INFO]: [MCAIBridge] 皮肤已存储: AI_Jane (classic) → http://192.168.3.55:8788/mcai/skinimg/ai_jane.png
+[20:56:05] [User Authenticator #4/INFO]: UUID of player AI_Jane is ee5baceb-c5c8-30bf-9f15-43bad3b03572
+[20:56:05] [Server thread/INFO]: AI_Jane joined the game
+[20:56:05] [Server thread/INFO]: AI_Jane[/127.0.0.1:53286] logged in with entity id 530 at ([world]37.5, 120.0, -22.5)
+[20:56:05] [Server thread/INFO]: [MCAIBridge] 诊断+0s: AI_Jane chatVisibility=FULL
+[20:56:17] [User Authenticator #4/INFO]: UUID of player TestPlayer is bb77495a-a740-3169-a238-69654c8bd2c1
+[20:56:17] [Server thread/INFO]: TestPlayer joined the game
+[20:56:17] [Server thread/INFO]: TestPlayer[/127.0.0.1:53288] logged in with entity id 535 at ([world]5.5, 118.0, 5.5)
+[20:56:17] [Server thread/INFO]: [MCAIBridge] 诊断+0s: TestPlayer chatVisibility=FULL
+[20:56:21] [Async Chat Thread - #8/INFO]: [Not Secure] <TestPlayer> @AI_Jane 你好
+[20:56:21] [Async Chat Thread - #8/INFO]: [Not Secure] <AI_Jane> [AI_Jane] 你好！我是 AI_Jane，收到: 你好（mock 回复：未配置 API Key）
+[20:56:21] [Server thread/INFO]: TestPlayer lost connection: Disconnected
+[20:56:21] [Server thread/INFO]: [voicechat] Disconnecting client TestPlayer
+[20:56:21] [Server thread/INFO]: TestPlayer left the game
+[20:56:30] [Server thread/INFO]: [MCAIBridge] 诊断+80s: AI_Jane chatVisibility=FULL

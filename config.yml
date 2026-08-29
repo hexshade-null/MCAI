@@ -6,6 +6,7 @@ server:
 ai:
   model: "glm-5.3-flash"
   api_key: ""
+  reply_via: "chat"
 skin:
   upload_url: "http://localhost:8788/mcai/skin"
   token: "changeme"

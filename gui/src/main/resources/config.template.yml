@@ -15,6 +15,7 @@ ai:
   api_key: "${ZAI_API_KEY}"  # 未设置则进入 mock 模式（不调用真实 API）
   system_prompt: "你是Minecraft服务器里的AI玩家，用中文简短回答（一两句话），语气友好自然。"
   reply_prefix: "[%s] "      # %s 替换为机器人名字
+  reply_via: "chat"          # chat=真实玩家聊天 | plugin=经伴生插件广播（Paper偶发丢弃机器人聊天时的兜底） | both
   timeout_seconds: 30
 
 connection:
