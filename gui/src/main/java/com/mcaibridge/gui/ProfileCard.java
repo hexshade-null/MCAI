@@ -39,7 +39,9 @@ public class ProfileCard extends VBox {
         this.cb = cb;
         getStyleClass().addAll("card");
         setSpacing(8);
-        setPrefWidth(240);
+        // 宽度随内容自适应（按钮行最宽），避免文字被截断成省略号
+        setMinWidth(Region.USE_PREF_SIZE);
+        setMaxWidth(Region.USE_PREF_SIZE);
 
         Label name = new Label(profile.name);
         name.getStyleClass().add("card-name");
