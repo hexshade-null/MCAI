@@ -36,8 +36,11 @@ voice:                       # 语音（配合 paper 伴生插件 SVC 中继）
     model: "whisper-large-v3"
     api_key: "${ASR_API_KEY}"
   tts:
-    provider: "edge"         # edge | off
-    voice: "zh-CN-XiaoxiaoNeural"
+    provider: "zai"          # zai | edge | off（zai=智谱 GLM-TTS）
+    base_url: "https://api.z.ai/api/paas/v4"
+    model: "glm-tts"
+    voice: "tongtong"        # tongtong/chuichui/xiaochen/jam/kazi/douji/luodo
+    api_key: "${ZAI_API_KEY}"  # 留空时回落使用 ai.api_key
     fallback_text: true      # TTS 失败时回退文字回复
 
 probe:                       # --probe 自检模式参数

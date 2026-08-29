@@ -80,8 +80,11 @@ public class BridgeConfig {
     public String asrBaseUrl = "https://api.groq.com/openai/v1";
     public String asrModel = "whisper-large-v3";
     public String asrApiKey = "";
-    public String ttsProvider = "edge";            // edge | off
-    public String ttsVoice = "zh-CN-XiaoxiaoNeural";
+    public String ttsProvider = "zai";             // zai | edge | off
+    public String ttsBaseUrl = "https://api.z.ai/api/paas/v4";
+    public String ttsModel = "glm-tts";
+    public String ttsVoice = "tongtong";           // zai: tongtong/chuichui/xiaochen...；edge: zh-CN-XiaoxiaoNeural
+    public String ttsApiKey = "";                  // 留空时回落使用 ai.api_key
     public boolean ttsFallbackText = true;
 
     public List<PlayerProfile> players = new ArrayList<>();
@@ -146,7 +149,10 @@ public class BridgeConfig {
         c.asrModel = asrModel;
         c.asrApiKey = asrApiKey;
         c.ttsProvider = ttsProvider;
+        c.ttsBaseUrl = ttsBaseUrl;
+        c.ttsModel = ttsModel;
         c.ttsVoice = ttsVoice;
+        c.ttsApiKey = ttsApiKey;
         c.ttsFallbackText = ttsFallbackText;
         c.botName = botName;
         c.authMethod = authMethod;
@@ -212,7 +218,10 @@ public class BridgeConfig {
             }
             if (tts != null) {
                 ttsProvider = str(tts, "provider", ttsProvider);
+                ttsBaseUrl = str(tts, "base_url", ttsBaseUrl);
+                ttsModel = str(tts, "model", ttsModel);
                 ttsVoice = str(tts, "voice", ttsVoice);
+                ttsApiKey = str(tts, "api_key", ttsApiKey);
                 ttsFallbackText = bool(tts, "fallback_text", ttsFallbackText);
             }
         }
@@ -260,6 +269,7 @@ public class BridgeConfig {
         microsoftClientId = interp(microsoftClientId);
         serverHost = interp(serverHost);
         asrApiKey = interp(asrApiKey);
+        ttsApiKey = interp(ttsApiKey);
         asrBaseUrl = interp(asrBaseUrl);
         skinToken = interp(skinToken);
         voiceToken = interp(voiceToken);

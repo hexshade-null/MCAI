@@ -5,13 +5,8 @@ import com.mcaibridge.auth.MicrosoftAuth;
 import com.mcaibridge.auth.OfflineAuth;
 import com.mcaibridge.config.BridgeConfig;
 import com.mcaibridge.skin.SkinManager;
-import com.mcaibridge.voice.AsrEngine;
-import com.mcaibridge.voice.EdgeTtsEngine;
-import com.mcaibridge.voice.MockAsrEngine;
-import com.mcaibridge.voice.OffTtsEngine;
-import com.mcaibridge.voice.TtsEngine;
+import com.mcaibridge.voice.VoiceEngines;
 import com.mcaibridge.voice.VoiceServer;
-import com.mcaibridge.voice.WhisperHttpAsrEngine;
 import org.geysermc.mcprotocollib.auth.GameProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,16 +88,8 @@ public final class HeadlessRunner {
 
     static VoiceServer startVoiceIfEnabled(BridgeConfig cfg, AIBrain brain) {
         if (!cfg.voiceEnabled) return null;
-        AsrEngine asr = switch (cfg.asrProvider) {
-            case "whisper-http" -> new WhisperHttpAsrEngine(cfg.asrBaseUrl, cfg.asrModel, cfg.asrApiKey);
-            default -> new MockAsrEngine();
-        };
-        TtsEngine tts = switch (cfg.ttsProvider) {
-            case "edge" -> new EdgeTtsEngine(cfg.ttsVoice);
-            default -> new OffTtsEngine();
-        };
         try {
-            VoiceServer server = new VoiceServer(cfg, asr, tts);
+            VoiceServer server = new VoiceServer(cfg, VoiceEngines.asr(cfg), VoiceEngines.tts(cfg));
             server.start();
             return server;
         } catch (Exception e) {

@@ -9,13 +9,8 @@ import com.mcaibridge.core.AIBrain;
 import com.mcaibridge.core.ChatHandler;
 import com.mcaibridge.core.MCBot;
 import com.mcaibridge.skin.SkinManager;
-import com.mcaibridge.voice.AsrEngine;
-import com.mcaibridge.voice.EdgeTtsEngine;
-import com.mcaibridge.voice.MockAsrEngine;
-import com.mcaibridge.voice.OffTtsEngine;
-import com.mcaibridge.voice.TtsEngine;
+import com.mcaibridge.voice.VoiceEngines;
 import com.mcaibridge.voice.VoiceServer;
-import com.mcaibridge.voice.WhisperHttpAsrEngine;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -238,16 +233,8 @@ public class MainWindow extends Application {
 
     private void ensureVoiceServer(BridgeConfig cfg, AIBrain brain) {
         if (!cfg.voiceEnabled || voiceServer != null) return;
-        AsrEngine asr = switch (cfg.asrProvider) {
-            case "whisper-http" -> new WhisperHttpAsrEngine(cfg.asrBaseUrl, cfg.asrModel, cfg.asrApiKey);
-            default -> new MockAsrEngine();
-        };
-        TtsEngine tts = switch (cfg.ttsProvider) {
-            case "edge" -> new EdgeTtsEngine(cfg.ttsVoice);
-            default -> new OffTtsEngine();
-        };
         try {
-            voiceServer = new VoiceServer(cfg, asr, tts);
+            voiceServer = new VoiceServer(cfg, VoiceEngines.asr(cfg), VoiceEngines.tts(cfg));
             voiceServer.start();
         } catch (Exception e) {
             logPanel.append("语音服务启动失败: " + e.getMessage());

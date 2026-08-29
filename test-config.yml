@@ -19,8 +19,10 @@ voice:
   asr:
     provider: "mock"
   tts:
-    provider: "edge"
-    voice: "zh-CN-XiaoxiaoNeural"
+    provider: "zai"
+    base_url: "https://api.z.ai/api/paas/v4"
+    model: "glm-tts"
+    voice: "tongtong"
     fallback_text: true
 probe:
   name: "TestPlayer"
