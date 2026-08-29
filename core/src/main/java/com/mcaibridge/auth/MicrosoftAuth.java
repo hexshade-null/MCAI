@@ -37,6 +37,27 @@ public final class MicrosoftAuth {
     }
 
     public static AuthResult login(DeviceCodeListener listener) throws Exception {
+        return login(listener, null);
+    }
+
+    /**
+     * 带令牌持久化的登录：tokenFile 存在且有效 → 直接恢复会话（不弹设备码，自动刷新过期令牌）；
+     * 否则走设备码流程，成功后把整条认证链（含 refresh token）保存到 tokenFile。
+     */
+    public static AuthResult login(DeviceCodeListener listener, java.nio.file.Path tokenFile) throws Exception {
+        if (tokenFile != null && java.nio.file.Files.exists(tokenFile)) {
+            try {
+                com.google.gson.JsonObject saved = com.google.gson.JsonParser
+                        .parseString(java.nio.file.Files.readString(tokenFile)).getAsJsonObject();
+                JavaAuthManager restored = JavaAuthManager.fromJson(MinecraftAuth.createHttpClient(), saved);
+                AuthResult result = build(restored);
+                log.info("已从本地令牌恢复微软登录会话: {}（无需再次设备码验证）", result.profile().getName());
+                return result;
+            } catch (Exception e) {
+                log.warn("本地令牌恢复失败（{}），转设备码登录", e.toString());
+            }
+        }
+
         JavaAuthManager authManager = JavaAuthManager.create(MinecraftAuth.createHttpClient())
                 .login((HttpClient httpClient, net.raphimc.minecraftauth.msa.model.MsaApplicationConfig appConfig) ->
                         new DeviceCodeMsaAuthService(httpClient, appConfig, (MsaDeviceCode deviceCode) -> {
@@ -47,11 +68,27 @@ public final class MicrosoftAuth {
                             if (listener != null) listener.onDeviceCode(uri, code, direct);
                         }));
 
+        AuthResult result = build(authManager);
+        if (tokenFile != null) saveToken(authManager, tokenFile);
+        return result;
+    }
+
+    private static AuthResult build(JavaAuthManager authManager) throws Exception {
         var mcProfile = authManager.getMinecraftProfile().getUpToDate();
         var mcToken = authManager.getMinecraftToken().getUpToDate();
         GameProfile profile = new GameProfile(mcProfile.getId(), mcProfile.getName());
         String token = mcToken.getToken();
         return new AuthResult("microsoft", profile, token, new MinecraftProtocol(profile, token));
+    }
+
+    private static void saveToken(JavaAuthManager authManager, java.nio.file.Path tokenFile) {
+        try {
+            java.nio.file.Files.createDirectories(tokenFile.getParent());
+            java.nio.file.Files.writeString(tokenFile, JavaAuthManager.toJson(authManager).toString());
+            log.info("微软登录令牌已保存，下次启动自动恢复: {}", tokenFile);
+        } catch (Exception e) {
+            log.warn("微软登录令牌保存失败: {}", e.toString());
+        }
     }
 
     /** Swing 弹窗：展示验证链接 + 代码，带“复制代码/直接打开”按钮。 */

@@ -187,7 +187,7 @@ public class MainWindow extends Application {
                     }
                 }
                 AuthResult auth = "microsoft".equals(cfg.authMethod)
-                        ? MicrosoftAuth.login(MicrosoftAuth::showDeviceCodeDialog)
+                        ? MicrosoftAuth.login(MicrosoftAuth::showDeviceCodeDialog, java.nio.file.Path.of(cfg.microsoftTokenFile))
                         : OfflineAuth.login(cfg.botName);
                 Platform.runLater(() -> logPanel.append("[" + p.name + "] 认证完成: " + auth.source()));
 

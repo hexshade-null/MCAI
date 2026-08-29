@@ -1,12 +1,13 @@
 bot:
   name: "BridgeBot"
+  microsoft_token_file: "~/.mcaibridge/microsoft-token.json"
 server:
   host: "localhost"
   port: 25565
 ai:
   model: "glm-5.3-flash"
   api_key: ""
-  reply_via: "chat"
+  reply_via: "both"
 skin:
   upload_url: "http://localhost:8788/mcai/skin"
   token: "changeme"

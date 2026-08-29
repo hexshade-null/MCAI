@@ -239,3 +239,14 @@
 [20:56:21] [Server thread/INFO]: [voicechat] Disconnecting client TestPlayer
 [20:56:21] [Server thread/INFO]: TestPlayer left the game
 [20:56:30] [Server thread/INFO]: [MCAIBridge] 诊断+80s: AI_Jane chatVisibility=FULL
+[20:56:45] [Server thread/INFO]: [MCAIBridge] 诊断+40s: AI_Jane chatVisibility=FULL
+[20:57:10] [Server thread/INFO]: [MCAIBridge] 诊断+120s: AI_Jane chatVisibility=FULL
+[20:57:25] [Server thread/INFO]: [MCAIBridge] 诊断+80s: AI_Jane chatVisibility=FULL
+[20:57:50] [Server thread/INFO]: [MCAIBridge] 诊断+160s: AI_Jane chatVisibility=FULL
+[20:58:05] [Server thread/INFO]: [MCAIBridge] 诊断+120s: AI_Jane chatVisibility=FULL
+[20:58:30] [Server thread/INFO]: [MCAIBridge] 诊断+200s: AI_Jane chatVisibility=FULL
+[20:58:45] [Server thread/INFO]: [MCAIBridge] 诊断+160s: AI_Jane chatVisibility=FULL
+[20:59:25] [Server thread/INFO]: [MCAIBridge] 诊断+200s: AI_Jane chatVisibility=FULL
+[21:13:16] [Server thread/INFO]: AI_Jane lost connection: Disconnected
+[21:13:16] [Server thread/INFO]: [voicechat] Disconnecting client AI_Jane
+[21:13:16] [Server thread/INFO]: AI_Jane left the game

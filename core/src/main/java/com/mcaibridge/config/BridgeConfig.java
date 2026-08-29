@@ -53,6 +53,7 @@ public class BridgeConfig {
     public String botName = "BridgeBot";
     public String authMethod = "offline";
     public String microsoftClientId = "";
+    public String microsoftTokenFile = System.getProperty("user.home") + "/.mcaibridge/microsoft-token.json";
     public String serverHost = "localhost";
     public int serverPort = 25565;
     public String aiBaseUrl = "https://api.z.ai/api/paas/v4/chat/completions";
@@ -157,6 +158,7 @@ public class BridgeConfig {
         c.botName = botName;
         c.authMethod = authMethod;
         c.microsoftClientId = microsoftClientId;
+        c.microsoftTokenFile = microsoftTokenFile;
         c.serverHost = serverHost;
         c.serverPort = serverPort;
         c.aiModel = aiModel;
@@ -177,6 +179,8 @@ public class BridgeConfig {
             botName = str(bot, "name", botName);
             authMethod = str(bot, "auth", authMethod);
             microsoftClientId = str(bot, "microsoft_client_id", microsoftClientId);
+            String tf = str(bot, "microsoft_token_file", "");
+            if (!tf.isBlank()) microsoftTokenFile = tf.replaceFirst("^~", System.getProperty("user.home"));
         }
         if (server != null) {
             serverHost = str(server, "host", serverHost);

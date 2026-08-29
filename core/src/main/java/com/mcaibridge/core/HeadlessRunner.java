@@ -29,7 +29,7 @@ public final class HeadlessRunner {
         uploadSkin(cfg);
 
         AuthResult auth = switch (cfg.authMethod) {
-            case "microsoft" -> MicrosoftAuth.login(MicrosoftAuth::showDeviceCodeDialog);
+            case "microsoft" -> MicrosoftAuth.login(MicrosoftAuth::showDeviceCodeDialog, java.nio.file.Path.of(cfg.microsoftTokenFile));
             default -> OfflineAuth.login(cfg.botName, skinProp);
         };
 
