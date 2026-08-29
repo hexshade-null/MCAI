@@ -1,0 +1,20 @@
+plugins {
+    id 'java-library'
+}
+
+group = 'com.mcaibridge'
+version = '1.0.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+dependencies {
+    api('org.geysermc.mcprotocollib:protocol:1.21.11-SNAPSHOT') {
+        exclude group: 'org.slf4j'
+    }
+    api 'org.yaml:snakeyaml:2.2'
+    api 'org.slf4j:slf4j-api:2.0.9'
+    runtimeOnly 'org.slf4j:slf4j-simple:2.0.9'
+}

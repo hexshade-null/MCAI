@@ -1,0 +1,7 @@
+name: MCAIBridge
+version: 1.0.0
+main: com.mcaibridge.paper.BridgePlugin
+api-version: '1.21'
+description: MCAI Bridge 伴生插件 — 离线皮肤注入 + Simple Voice Chat AI 语音中继
+author: mcaibridge
+softdepend: [voicechat]

@@ -7,12 +7,20 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.Clientbound
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 聊天监听：收到含 @botName 的消息时触发 AI 回复。
+ * 回复通道可配：chat（真实玩家聊天）/ plugin（经 paper 伴生插件广播，绕开部分 Paper
+ * 版本对机器人外发聊天的间歇性静默丢弃）/ both。
  */
 public class ChatHandler {
     private static final Logger log = LoggerFactory.getLogger(ChatHandler.class);
@@ -21,6 +29,10 @@ public class ChatHandler {
     private final BridgeConfig cfg;
     private final MCBot bot;
     private final AIBrain brain;
+    private final HttpClient http = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(5))
+            .build();
+    private final AtomicInteger pluginFailures = new AtomicInteger();
     private final ExecutorService aiExecutor = Executors.newSingleThreadExecutor(r -> {
         Thread t = new Thread(r, "mcai-ai");
         t.setDaemon(true);
@@ -66,15 +78,57 @@ public class ChatHandler {
                 if (reply != null && !reply.isBlank()) {
                     String out = prefix() + truncate(reply.trim());
                     log.info("AI 回复: {}", out);
-                    bot.sendChat(out);
+                    sendReply(out);
                 }
             } catch (Exception e) {
                 log.warn("AI 调用失败: {}", e.toString());
-                bot.sendChat(prefix() + "(AI 暂时无法回复)");
+                sendReply(prefix() + "(AI 暂时无法回复)");
             } finally {
                 pending.set(false);
             }
         });
+    }
+
+    /** 按配置通道发送：chat=机器人真实聊天；plugin=经插件广播（每次先尝试真实聊天，失败自动降级）。 */
+    private void sendReply(String out) {
+        String via = cfg.replyVia;
+        if ("plugin".equals(via)) {
+            sendViaPlugin(out);
+            return;
+        }
+        if (pluginFailures.get() < 3) {
+            bot.sendChat(out); // 真实聊天
+        }
+        if ("both".equals(via) || pluginFailures.get() >= 3) {
+            sendViaPlugin(out);
+        }
+    }
+
+    private void sendViaPlugin(String text) {
+        if (cfg.skinUploadUrl == null || cfg.skinUploadUrl.isBlank()) return;
+        String url = cfg.skinUploadUrl.replaceAll("/mcai/skin$", "/mcai/chat");
+        try {
+            com.google.gson.JsonObject body = new com.google.gson.JsonObject();
+            body.addProperty("from", cfg.botName);
+            body.addProperty("text", text);
+            HttpRequest req = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(5))
+                    .header("Content-Type", "application/json")
+                    .header("X-MCAI-Token", cfg.skinToken)
+                    .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
+                    .build();
+            HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() == 200) {
+                pluginFailures.set(0);
+                return;
+            }
+            log.warn("插件广播回复失败: HTTP {}", resp.statusCode());
+            pluginFailures.incrementAndGet();
+        } catch (Exception e) {
+            pluginFailures.incrementAndGet();
+            log.warn("插件广播回复异常: {}", e.toString());
+        }
     }
 
     private String extractQuestion(String text, String trigger) {

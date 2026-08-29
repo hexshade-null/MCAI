@@ -1,0 +1,51 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'com.mcaibridge'
+version = '1.0.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+dependencies {
+    implementation project(':core')
+}
+
+javafx {
+    version = '21'
+    modules = ['javafx.controls']
+}
+
+application {
+    mainClass = 'com.mcaibridge.Main'
+}
+
+tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+    archiveBaseName = 'mcaibridge'
+    archiveClassifier = 'all'
+    archiveVersion = '1.0.0'
+    manifest {
+        attributes 'Main-Class': 'com.mcaibridge.Main'
+    }
+    mergeServiceFiles()
+    exclude '**/module-info.class'
+}
+
+// 保持第一迭代交付路径：根目录 build/libs/mcaibridge-1.0.0-all.jar
+tasks.named('build') {
+    dependsOn tasks.named('shadowJar')
+    doLast {
+        def target = rootProject.file('build/libs')
+        target.mkdirs()
+        copy {
+            from tasks.named('shadowJar').get().archiveFile
+            into target
+        }
+    }
+}

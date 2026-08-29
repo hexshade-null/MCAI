@@ -1,0 +1,16 @@
+# MCAI Bridge 伴生插件配置
+api:
+  port: 8788                 # bridge 上传皮肤、客户端拉取皮肤的端口
+  token: "changeme"          # 与 bridge 配置 skin.token 保持一致
+
+skin:
+  enabled: true              # 玩家登录时注入已上传的皮肤
+
+voice:
+  enabled: true              # Simple Voice Chat 语音中继
+  bridge_url: "http://localhost:8787/mcai/voice"   # bridge 的 VoiceServer 地址
+  token: "changeme"          # 与 bridge 配置 voice.token 保持一致
+  silence_ms: 900            # 静音多久判定一句话结束
+  max_utterance_ms: 12000    # 单句最长时长
+  broadcast: "all"           # all=全服可听到 | nearby=说话者附近
+  send_text: true            # 同时以文字广播 AI 回复

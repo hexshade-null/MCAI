@@ -1,0 +1,13 @@
+api:
+  port: 8788
+  token: "changeme"
+skin:
+  enabled: true
+voice:
+  enabled: true
+  bridge_url: "http://localhost:8787/mcai/voice"
+  token: "changeme"
+  silence_ms: 900
+  max_utterance_ms: 12000
+  broadcast: "all"
+  send_text: true

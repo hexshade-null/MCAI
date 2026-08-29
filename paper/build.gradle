@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.mcaibridge'
+version = '1.0.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+dependencies {
+    compileOnly 'io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT'
+    // Simple Voice Chat API（类随 SVC 插件 jar 提供，运行时由真实 SVC 插件加载）
+    compileOnly files('libs/voicechat-bukkit-2.6.21.jar')
+}
+
+tasks.named('jar') {
+    archiveBaseName = 'mcaibridge-paper'
+}

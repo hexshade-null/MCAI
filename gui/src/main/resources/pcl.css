@@ -1,0 +1,128 @@
+/* MCAI Bridge — PCL 风格暗色主题 */
+.root {
+    -fx-background-color: #1E1E2E;
+    -fx-font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    -fx-text-fill: #CDD6F4;
+}
+
+.logo-title {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #CDD6F4;
+}
+
+.logo-sub {
+    -fx-font-size: 12px;
+    -fx-text-fill: #A6ADC8;
+}
+
+.logo-bar {
+    -fx-background-color: #181825;
+    -fx-padding: 14 18 14 18;
+}
+
+.quick-bar {
+    -fx-background-color: #181825;
+    -fx-padding: 10 18 10 18;
+    -fx-border-color: transparent transparent #313244 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+/* 半透明圆角“毛玻璃”卡片 */
+.card {
+    -fx-background-color: rgba(255, 255, 255, 0.055);
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-border-width: 1;
+    -fx-padding: 14;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 10, 0.1, 0, 3);
+}
+
+.card:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.09);
+}
+
+.card-name {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #CDD6F4;
+}
+
+.card-server {
+    -fx-font-size: 12px;
+    -fx-text-fill: #A6ADC8;
+}
+
+.status-dot-green  { -fx-background-color: #A6E3A1; -fx-min-width: 10; -fx-min-height: 10; -fx-max-width: 10; -fx-max-height: 10; -fx-background-radius: 5; }
+.status-dot-yellow { -fx-background-color: #F9E2AF; -fx-min-width: 10; -fx-min-height: 10; -fx-max-width: 10; -fx-max-height: 10; -fx-background-radius: 5; }
+.status-dot-red    { -fx-background-color: #F38BA8; -fx-min-width: 10; -fx-min-height: 10; -fx-max-width: 10; -fx-max-height: 10; -fx-background-radius: 5; }
+.status-dot-grey   { -fx-background-color: #6C7086; -fx-min-width: 10; -fx-min-height: 10; -fx-max-width: 10; -fx-max-height: 10; -fx-background-radius: 5; }
+
+.status-text {
+    -fx-font-size: 11px;
+    -fx-text-fill: #A6ADC8;
+}
+
+.btn-primary {
+    -fx-background-color: #89B4FA;
+    -fx-text-fill: #1E1E2E;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 6 16 6 16;
+    -fx-cursor: hand;
+}
+
+.btn-primary:hover { -fx-background-color: #B4BEFE; }
+.btn-primary:disabled { -fx-background-color: #585B70; -fx-text-fill: #A6ADC8; }
+
+.btn-ghost {
+    -fx-background-color: transparent;
+    -fx-text-fill: #CDD6F4;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: #45475A;
+    -fx-border-width: 1;
+    -fx-padding: 5 12 5 12;
+    -fx-cursor: hand;
+}
+
+.btn-ghost:hover { -fx-background-color: rgba(255,255,255,0.08); }
+.btn-ghost:disabled { -fx-text-fill: #585B70; -fx-border-color: #313244; }
+
+.log-area {
+    -fx-control-inner-background: #181825;
+    -fx-background-color: #181825;
+    -fx-text-fill: #CDD6F4;
+    -fx-font-family: "Menlo", monospace;
+    -fx-font-size: 12px;
+}
+
+.titled-pane > .title {
+    -fx-background-color: #181825;
+}
+
+.titled-pane > .title > .text {
+    -fx-fill: #A6ADC8;
+}
+
+.titled-pane > .content {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.label { -fx-text-fill: #CDD6F4; }
+
+.text-field, .password-field, .choice-box {
+    -fx-background-color: #313244;
+    -fx-text-fill: #CDD6F4;
+    -fx-prompt-text-fill: #6C7086;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.scroll-pane, .scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.flow-cards { -fx-padding: 14; }
