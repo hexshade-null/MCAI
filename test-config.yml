@@ -1,0 +1,18 @@
+bot:
+  name: "AI_Jane"
+  auth: "offline"
+server:
+  host: "localhost"
+  port: 25565
+ai:
+  provider: "zai"
+  base_url: "https://api.z.ai/api/paas/v4/chat/completions"
+  model: "glm-5.3-flash"
+  api_key: "${ZAI_API_KEY}"
+  system_prompt: "你是Minecraft服务器里的AI玩家，用中文简短回答（一两句话），语气友好自然。"
+  reply_prefix: "[%s] "
+connection:
+  reconnect_max_attempts: 5
+probe:
+  name: "TestPlayer"
+  timeout_ms: 25000
