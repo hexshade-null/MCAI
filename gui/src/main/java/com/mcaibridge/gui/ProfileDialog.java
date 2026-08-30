@@ -1,10 +1,12 @@
 package com.mcaibridge.gui;
 
+import com.mcaibridge.config.BridgeConfig;
 import com.mcaibridge.config.BridgeConfig.PlayerProfile;
 import com.mcaibridge.skin.SkinManager;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -18,28 +20,39 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * 档案编辑对话框（含皮肤选择 + 平面预览）。
+ * 档案编辑对话框：名字/账户/API key/皮肤 + 服务器按名引用（servers[]）+ 语音 svc 开关。
  */
 public class ProfileDialog extends Stage {
     private final TextField nameField = new TextField();
+    private final ChoiceBox<String> serverChoice = new ChoiceBox<>();
     private final TextField hostField = new TextField();
     private final TextField portField = new TextField();
     private final ChoiceBox<String> authChoice = new ChoiceBox<>();
     private final PasswordField apiKeyField = new PasswordField();
     private final TextField modelField = new TextField();
+    private final CheckBox svcToggle = new CheckBox(I18n.t("profile.svc"));
     private final TextField skinPathField = new TextField();
     private final ChoiceBox<String> skinModelChoice = new ChoiceBox<>();
     private final SkinPreview preview = new SkinPreview();
 
+    private final BridgeConfig baseCfg;
     private byte[] loadedSkinPng;
     private boolean saved;
 
-    public ProfileDialog(PlayerProfile profile) {
-        setTitle("AI 玩家档案");
+    public ProfileDialog(BridgeConfig baseCfg, PlayerProfile profile) {
+        this.baseCfg = baseCfg;
+        setTitle(I18n.t("profile.title"));
         authChoice.getItems().addAll("offline", "microsoft");
         skinModelChoice.getItems().addAll("classic", "slim");
+
+        List<String> serverItems = new ArrayList<>();
+        for (BridgeConfig.ServerEntry s : baseCfg.servers) serverItems.add(s.name);
+        serverItems.add(I18n.t("profile.serverCustom"));
+        serverChoice.getItems().addAll(serverItems);
 
         nameField.setText(profile.name);
         hostField.setText(profile.serverHost);
@@ -47,8 +60,31 @@ public class ProfileDialog extends Stage {
         authChoice.setValue(profile.auth);
         apiKeyField.setText(profile.aiApiKey);
         modelField.setText(profile.aiModel);
+        svcToggle.setSelected(profile.svc);
         skinPathField.setText(profile.skinFile);
         skinModelChoice.setValue(profile.skinModel);
+
+        BridgeConfig.ServerEntry ref = baseCfg.findServer(profile.server);
+        if (ref != null) {
+            serverChoice.setValue(ref.name);
+        } else {
+            serverChoice.setValue(I18n.t("profile.serverCustom"));
+        }
+        hostField.setDisable(ref != null);
+        portField.setDisable(ref != null);
+        serverChoice.valueProperty().addListener((o, a, b) -> {
+            boolean custom = I18n.t("profile.serverCustom").equals(b);
+            hostField.setDisable(!custom);
+            portField.setDisable(!custom);
+            if (!custom) {
+                BridgeConfig.ServerEntry s = baseCfg.findServer(b);
+                if (s != null) {
+                    hostField.setText(s.host);
+                    portField.setText(String.valueOf(s.port));
+                }
+            }
+        });
+
         reloadPreview();
 
         GridPane grid = new GridPane();
@@ -56,25 +92,43 @@ public class ProfileDialog extends Stage {
         grid.setVgap(8);
         grid.setPadding(new Insets(16));
         int r = 0;
-        grid.add(new Label("玩家名字:"), 0, r); grid.add(nameField, 1, r++);
-        grid.add(new Label("服务器地址:"), 0, r); grid.add(hostField, 1, r++);
-        grid.add(new Label("端口:"), 0, r); grid.add(portField, 1, r++);
-        grid.add(new Label("登录方式:"), 0, r); grid.add(authChoice, 1, r++);
-        grid.add(new Label("API Key:"), 0, r); grid.add(apiKeyField, 1, r++);
-        grid.add(new Label("AI 模型:"), 0, r); grid.add(modelField, 1, r++);
+        grid.add(new Label(I18n.t("profile.name")), 0, r);
+        grid.add(nameField, 1, r++);
+        grid.add(new Label(I18n.t("profile.server")), 0, r);
+        grid.add(serverChoice, 1, r++);
+        grid.add(new Label(I18n.t("profile.host")), 0, r);
+        grid.add(hostField, 1, r++);
+        grid.add(new Label(I18n.t("profile.port")), 0, r);
+        grid.add(portField, 1, r++);
+        grid.add(new Label(I18n.t("profile.auth")), 0, r);
+        grid.add(authChoice, 1, r++);
+        grid.add(new Label(I18n.t("profile.apiKey")), 0, r);
+        grid.add(apiKeyField, 1, r++);
+        grid.add(new Label(I18n.t("profile.model")), 0, r);
+        grid.add(modelField, 1, r++);
+        grid.add(new Label(""), 0, r);
+        grid.add(svcToggle, 1, r++);
 
-        Button browse = new Button("浏览…");
+        Button browse = new Button(I18n.t("btn.browse"));
         browse.setOnAction(e -> chooseSkin());
-        skinPathField.setPrefWidth(260);
+        Button manageServers = new Button(I18n.t("btn.manageServers"));
+        manageServers.getStyleClass().add("btn-ghost");
+        manageServers.setOnAction(e -> {
+            ServerDialog d = new ServerDialog(baseCfg);
+            d.showAndWait();
+        });
+        skinPathField.setPrefWidth(240);
         skinPathField.textProperty().addListener((o, a, b) -> reloadPreview());
-        HBox skinRow = new HBox(8, skinPathField, browse, new Label("模型:"), skinModelChoice);
-        grid.add(new Label("皮肤文件:"), 0, r); grid.add(skinRow, 1, r++);
-        VBox previewBox = new VBox(4, new Label("皮肤预览:"), preview);
+        HBox skinRow = new HBox(8, skinPathField, browse, new Label(I18n.t("profile.skinModel")), skinModelChoice);
+        grid.add(new Label(I18n.t("profile.skinFile")), 0, r);
+        grid.add(skinRow, 1, r++);
+        VBox previewBox = new VBox(4, new Label(I18n.t("profile.preview")), preview);
         grid.add(previewBox, 1, r++);
+        grid.add(manageServers, 1, r++);
 
-        Button save = new Button("保存");
+        Button save = new Button(I18n.t("btn.save"));
         save.getStyleClass().add("btn-primary");
-        Button cancel = new Button("取消");
+        Button cancel = new Button(I18n.t("btn.cancel"));
         cancel.getStyleClass().add("btn-ghost");
         save.setOnAction(e -> {
             if (applyTo(profile)) {
@@ -91,6 +145,7 @@ public class ProfileDialog extends Stage {
         root.setBottom(buttons);
         setScene(new Scene(root));
         getScene().getStylesheets().add(getClass().getResource("/pcl.css").toExternalForm());
+        ServerDialog.applyTheme(getScene());
     }
 
     public boolean isSaved() {
@@ -100,7 +155,7 @@ public class ProfileDialog extends Stage {
     private void chooseSkin() {
         FileChooser fc = new FileChooser();
         fc.setTitle("选择皮肤 PNG");
-        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Minecraft 皮肤", "*.png"));
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PNG", "*.png"));
         var file = fc.showOpenDialog(this);
         if (file != null) skinPathField.setText(file.getAbsolutePath());
     }
@@ -122,18 +177,32 @@ public class ProfileDialog extends Stage {
     private boolean applyTo(PlayerProfile p) {
         if (nameField.getText().isBlank()) {
             new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.WARNING,
-                    "玩家名字不能为空").showAndWait();
+                    I18n.t("profile.emptyName")).showAndWait();
             return false;
         }
         p.name = nameField.getText().trim();
-        p.serverHost = hostField.getText().trim();
-        try {
-            p.serverPort = Integer.parseInt(portField.getText().trim());
-        } catch (NumberFormatException ignored) {
+        boolean custom = I18n.t("profile.serverCustom").equals(serverChoice.getValue());
+        if (custom) {
+            p.server = "";
+        } else {
+            p.server = serverChoice.getValue();
+            BridgeConfig.ServerEntry s = baseCfg.findServer(p.server);
+            if (s != null) {
+                p.serverHost = s.host;
+                p.serverPort = s.port;
+            }
+        }
+        if (custom || p.serverHost == null || p.serverHost.isBlank()) {
+            p.serverHost = hostField.getText().trim();
+            try {
+                p.serverPort = Integer.parseInt(portField.getText().trim());
+            } catch (NumberFormatException ignored) {
+            }
         }
         p.auth = authChoice.getValue();
         p.aiApiKey = apiKeyField.getText().trim();
         p.aiModel = modelField.getText().trim();
+        p.svc = svcToggle.isSelected();
         p.skinFile = skinPathField.getText().trim();
         p.skinModel = skinModelChoice.getValue();
         return true;

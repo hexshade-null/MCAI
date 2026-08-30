@@ -22,29 +22,53 @@ public class BridgeConfig {
     private static final Logger log = LoggerFactory.getLogger(BridgeConfig.class);
     private static final Pattern ENV_PATTERN = Pattern.compile("\\$\\{([A-Za-z_][A-Za-z0-9_]*)}");
 
+    /** 独立服务器条目：角色按名字引用，像 MC 客户端的服务器列表。 */
+    public static class ServerEntry {
+        public String name = "本地服务器";
+        public String host = "localhost";
+        public int port = 25565;
+
+        public static ServerEntry fromMap(Map<String, Object> m) {
+            ServerEntry s = new ServerEntry();
+            s.name = str(m, "name", s.name);
+            s.host = str(m, "host", s.host);
+            s.port = (int) num(m, "port", s.port);
+            return s;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
     /** 单个 AI 玩家档案（GUI 卡片列表 / --profile 的数据源）。 */
     public static class PlayerProfile {
         public String name = "BridgeBot";
         public String auth = "offline";            // offline | microsoft
         public String microsoftClientId = "";
+        public String server = "";                 // 引用 servers[].name；空=直接用 host/port
         public String serverHost = "localhost";
         public int serverPort = 25565;
         public String aiModel = "glm-5.3-flash";
         public String aiApiKey = "";
         public String skinFile = "";               // 64x64/64x32 PNG；空=无皮肤
         public String skinModel = "classic";       // classic | slim
+        public boolean svc = false;                // 是否启用 Simple Voice Chat 语音（默认关，显式开启）
 
         public static PlayerProfile fromMap(Map<String, Object> m) {
             PlayerProfile p = new PlayerProfile();
             p.name = str(m, "name", p.name);
             p.auth = str(m, "auth", p.auth);
             p.microsoftClientId = str(m, "microsoft_client_id", p.microsoftClientId);
+            p.server = str(m, "server", p.server);
             p.serverHost = str(m, "host", p.serverHost);
             p.serverPort = (int) num(m, "port", p.serverPort);
             p.aiModel = str(m, "model", p.aiModel);
             p.aiApiKey = str(m, "api_key", p.aiApiKey);
             p.skinFile = str(m, "skin_file", p.skinFile);
             p.skinModel = str(m, "skin_model", p.skinModel);
+            p.svc = bool(m, "svc", p.svc);
             return p;
         }
     }
@@ -87,7 +111,17 @@ public class BridgeConfig {
     public String ttsVoice = "tongtong";           // zai: tongtong/chuichui/xiaochen...；edge: zh-CN-XiaoxiaoNeural
     public String ttsApiKey = "";                  // 留空时回落使用 ai.api_key
     public boolean ttsFallbackText = true;
+    /** 当前生效档案的语音开关（merge() 从 PlayerProfile.svc 填充）。 */
+    public boolean svc = false;
 
+    // 生存辅助（纯本地端）
+    public boolean autoRespawn = true;      // 死亡自动重生
+    public boolean autoEat = true;          // 低饥饿自动吃
+    public int eatBelowFood = 10;           // 饥饿值低于该值触发进食（0-20）
+    public int digDelayMs = 900;            // 挖掘 START→FINISH 间隔（空手近似值，可按工具调整）
+    public List<Integer> foodItemIds = new ArrayList<>(); // 可食用物品的协议数字 id（实测填充；空=内置表）
+
+    public List<ServerEntry> servers = new ArrayList<>();
     public List<PlayerProfile> players = new ArrayList<>();
 
     public static BridgeConfig load(Path path) throws IOException {
@@ -126,6 +160,7 @@ public class BridgeConfig {
             c.aiApiKey = p.aiApiKey;
             c.skinFile = p.skinFile;
             c.skinModel = p.skinModel;
+            c.svc = p.svc;
         }
         return c;
     }
@@ -163,6 +198,19 @@ public class BridgeConfig {
         c.serverPort = serverPort;
         c.aiModel = aiModel;
         c.aiApiKey = aiApiKey;
+        c.svc = svc;
+        c.autoRespawn = autoRespawn;
+        c.autoEat = autoEat;
+        c.eatBelowFood = eatBelowFood;
+        c.digDelayMs = digDelayMs;
+        c.foodItemIds.addAll(foodItemIds);
+        for (ServerEntry s : servers) {
+            ServerEntry cs = new ServerEntry();
+            cs.name = s.name;
+            cs.host = s.host;
+            cs.port = s.port;
+            c.servers.add(cs);
+        }
         return c;
     }
 
@@ -198,6 +246,20 @@ public class BridgeConfig {
         if (conn != null) {
             reconnectMaxAttempts = (int) num(conn, "reconnect_max_attempts", reconnectMaxAttempts);
         }
+        Map<String, Object> survival = (Map<String, Object>) root.get("survival");
+        if (survival != null) {
+            autoRespawn = bool(survival, "auto_respawn", autoRespawn);
+            autoEat = bool(survival, "auto_eat", autoEat);
+            eatBelowFood = (int) num(survival, "eat_below_food", eatBelowFood);
+            digDelayMs = (int) num(survival, "dig_delay_ms", digDelayMs);
+            Object ids = survival.get("food_item_ids");
+            if (ids instanceof List<?> il && !il.isEmpty()) {
+                foodItemIds.clear();
+                for (Object o : il) {
+                    if (o instanceof Number n) foodItemIds.add(n.intValue());
+                }
+            }
+        }
         if (probe != null) {
             probeName = str(probe, "name", probeName);
             probeTimeoutMs = num(probe, "timeout_ms", probeTimeoutMs);
@@ -229,6 +291,16 @@ public class BridgeConfig {
                 ttsFallbackText = bool(tts, "fallback_text", ttsFallbackText);
             }
         }
+        Object ss = root.get("servers");
+        if (ss instanceof List<?> slist) {
+            for (Object o : slist) {
+                if (o instanceof Map<?, ?> m) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> sm = (Map<String, Object>) m;
+                    servers.add(ServerEntry.fromMap(sm));
+                }
+            }
+        }
         Object ps = root.get("players");
         if (ps instanceof List<?> list) {
             for (Object o : list) {
@@ -248,8 +320,25 @@ public class BridgeConfig {
         }
     }
 
-    /** 无 players[] 时由旧单档案字段合成一个档案，保证向后兼容。 */
+    /** 服务器引用解析 + 无 players[] 时由旧单档案字段合成，保证向后兼容。 */
     private void normalizeProfiles() {
+        // 旧式 server: 段在未写 servers[] 时隐式成为默认服务器条目
+        if (servers.isEmpty()) {
+            ServerEntry s = new ServerEntry();
+            s.name = "default";
+            s.host = serverHost;
+            s.port = serverPort;
+            servers.add(s);
+        }
+        for (PlayerProfile p : players) {
+            ServerEntry ref = findServer(p.server);
+            if (ref != null) {
+                p.serverHost = ref.host;
+                p.serverPort = ref.port;
+            } else if (p.server != null && !p.server.isBlank()) {
+                log.warn("档案 {} 引用的服务器 \"{}\" 不在 servers 列表中，沿用 host/port", p.name, p.server);
+            }
+        }
         if (players.isEmpty()) {
             PlayerProfile p = new PlayerProfile();
             p.name = botName;
@@ -265,7 +354,18 @@ public class BridgeConfig {
         }
     }
 
+    public ServerEntry findServer(String name) {
+        if (name == null || name.isBlank()) return null;
+        for (ServerEntry s : servers) {
+            if (s.name.equals(name)) return s;
+        }
+        return null;
+    }
+
     private void interpolate() {
+        for (ServerEntry s : servers) {
+            s.host = interp(s.host);
+        }
         aiBaseUrl = interp(aiBaseUrl);
         aiApiKey = interp(aiApiKey);
         aiSystemPrompt = interp(aiSystemPrompt);

@@ -44,15 +44,8 @@ public final class HeadlessRunner {
                 System.out.println("[bridge] 状态: " + state + " (" + detail + ")");
             }
         });
-        AIBrain brain = new AIBrain(cfg);
-        PlayerController controller = new PlayerController(cfg, bot);
-        controller.start();
-        ChatHandler chatHandler = new ChatHandler(cfg, bot, brain);
-        chatHandler.setController(controller);
-        bot.setChatHandler(chatHandler);
-        bot.setController(controller);
-
-        VoiceServer voiceServer = startVoiceIfEnabled(cfg, brain);
+        BotFactory.Handles h = BotFactory.assemble(cfg, bot);
+        VoiceServer voiceServer = startVoiceIfEnabled(cfg);
 
         CountDownLatch stop = new CountDownLatch(1);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -91,8 +84,13 @@ public final class HeadlessRunner {
         }
     }
 
-    static VoiceServer startVoiceIfEnabled(BridgeConfig cfg, AIBrain brain) {
+    /** 语音需全局开启且当前档案显式 svc: true 才启动（语音模块分离）。 */
+    static VoiceServer startVoiceIfEnabled(BridgeConfig cfg) {
         if (!cfg.voiceEnabled) return null;
+        if (!cfg.svc) {
+            log.info("当前档案 svc=false，不启动语音服务");
+            return null;
+        }
         try {
             VoiceServer server = new VoiceServer(cfg, VoiceEngines.asr(cfg), VoiceEngines.tts(cfg));
             server.start();

@@ -42,13 +42,18 @@ public class AIBrain {
     }
 
     public String chat(String question) throws Exception {
+        return chat(cfg.aiSystemPrompt, question);
+    }
+
+    /** 用指定 system prompt 调用（意图解析等场景）。 */
+    public String chat(String systemPrompt, String question) throws Exception {
         if (isMock()) {
             return "你好！我是 " + cfg.botName + "，收到: " + question + "（mock 回复：未配置 API Key）";
         }
         IOException last = null;
         for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
             try {
-                return callApi(question);
+                return callApi(systemPrompt, question);
             } catch (IOException e) {
                 last = e;
                 log.warn("AI 调用失败(第 {}/{} 次): {}", attempt, MAX_ATTEMPTS, e.toString());
@@ -57,11 +62,11 @@ public class AIBrain {
         throw last;
     }
 
-    private String callApi(String question) throws IOException, InterruptedException {
+    private String callApi(String systemPrompt, String question) throws IOException, InterruptedException {
         JsonObject body = new JsonObject();
         body.addProperty("model", cfg.aiModel);
         JsonArray messages = new JsonArray();
-        messages.add(msg("system", cfg.aiSystemPrompt));
+        messages.add(msg("system", systemPrompt));
         messages.add(msg("user", question));
         body.add("messages", messages);
 

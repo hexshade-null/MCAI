@@ -3,7 +3,6 @@ package com.mcaibridge.gui;
 import com.mcaibridge.config.BridgeConfig.PlayerProfile;
 import com.mcaibridge.core.MCBot;
 import javafx.animation.ScaleTransition;
-import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -11,7 +10,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 /**
- * AI 玩家卡片：名字/服务器/状态灯 + 连接、断开、编辑、删除。
+ * AI 玩家卡片：名字/服务器/状态灯/svc 徽标 + 连接、编辑、删除。
  */
 public class ProfileCard extends VBox {
     public interface Callback {
@@ -27,8 +26,10 @@ public class ProfileCard extends VBox {
     private final PlayerProfile profile;
     private final Callback cb;
     private final Region dot = new Region();
-    private final Label statusLabel = new Label("未连接");
-    private final Button connectBtn = new Button("连接");
+    private final Label statusLabel = new Label();
+    private final Label serverLabel = new Label();
+    private final Label svcBadge = new Label("SVC");
+    private final Button connectBtn = new Button();
 
     public PlayerProfile profile() {
         return profile;
@@ -45,20 +46,25 @@ public class ProfileCard extends VBox {
 
         Label name = new Label(profile.name);
         name.getStyleClass().add("card-name");
-        Label server = new Label(profile.serverHost + ":" + profile.serverPort + " · " + profile.auth);
-        server.getStyleClass().add("card-server");
+        serverLabel.getStyleClass().add("card-server");
+        serverLabel.setText(serverText());
+        statusLabel.getStyleClass().add("status-text");
+        statusLabel.setText(I18n.t("status.notConnected"));
+        svcBadge.getStyleClass().add("card-badge");
+        svcBadge.setVisible(profile.svc);
+        svcBadge.setManaged(profile.svc);
 
         HBox statusRow = new HBox(6, dot, statusLabel);
-        statusLabel.getStyleClass().add("status-text");
         setDot("grey");
 
         connectBtn.getStyleClass().add("btn-primary");
-        Button edit = new Button("编辑");
-        Button skin = new Button("皮肤");
-        Button delete = new Button("删除");
+        connectBtn.setText(I18n.t("btn.connect"));
+        Button edit = new Button(I18n.t("btn.edit"));
+        Button skin = new Button(I18n.t("btn.skin"));
+        Button delete = new Button(I18n.t("btn.delete"));
         edit.getStyleClass().add("btn-ghost");
         skin.getStyleClass().add("btn-ghost");
-        delete.getStyleClass().add("btn-ghost");
+        delete.getStyleClass().add("btn-danger");
 
         connectBtn.setOnAction(e -> cb.onConnect(profile));
         edit.setOnAction(e -> cb.onEdit(profile));
@@ -66,11 +72,18 @@ public class ProfileCard extends VBox {
         delete.setOnAction(e -> cb.onDelete(profile));
         HBox buttons = new HBox(8, connectBtn, edit, skin, delete);
 
-        getChildren().addAll(new HBox(8, name, statusRow) {{ setSpacing(8); }}, server, new Region(), buttons);
-        VBox.setMargin(new HBox(), new Insets(0));
+        HBox titleRow = new HBox(10, name, statusRow, svcBadge);
+        titleRow.setSpacing(10);
+        getChildren().addAll(titleRow, serverLabel, new Region(), buttons);
 
         setOnMouseEntered(e -> playScale(1.02));
         setOnMouseExited(e -> playScale(1.0));
+    }
+
+    private String serverText() {
+        String host = profile.serverHost + ":" + profile.serverPort;
+        if (profile.server != null && !profile.server.isBlank()) host += " · " + profile.server;
+        return host + " · " + profile.auth;
     }
 
     private void playScale(double to) {
@@ -84,18 +97,20 @@ public class ProfileCard extends VBox {
         switch (state) {
             case CONNECTED -> {
                 setDot("green");
-                statusLabel.setText("在线");
-                connectBtn.setText("断开");
+                statusLabel.setText(I18n.t("status.online"));
+                connectBtn.setText(I18n.t("btn.disconnect"));
             }
             case CONNECTING -> {
                 setDot("yellow");
-                statusLabel.setText("连接中…");
-                connectBtn.setText("连接");
+                statusLabel.setText(I18n.t("status.connecting"));
+                connectBtn.setText(I18n.t("btn.connect"));
             }
             default -> {
                 setDot("red");
-                statusLabel.setText(detail == null || detail.isBlank() || "未连接".equals(detail) ? "离线" : "离线 · " + abbreviate(detail));
-                connectBtn.setText("连接");
+                String base = I18n.t("status.offline");
+                statusLabel.setText(detail == null || detail.isBlank() || I18n.t("status.notConnected").equals(detail)
+                        ? base : base + " · " + abbreviate(detail));
+                connectBtn.setText(I18n.t("btn.connect"));
             }
         }
     }

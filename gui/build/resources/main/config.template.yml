@@ -1,4 +1,4 @@
-# MCAI Bridge 配置模板。复制为 config.yml 后修改；${VAR} 会被环境变量替换。
+# MCAI 配置模板。复制为 config.yml 后修改；${VAR} 会被环境变量替换。
 bot:
   name: "BridgeBot"          # 机器人玩家名（仅 ASCII 字母/数字/下划线）
   auth: "offline"            # offline | microsoft
@@ -8,6 +8,11 @@ server:
   host: "localhost"
   port: 25565
 
+# 独立服务器列表（像 MC 客户端添加服务器）：角色用 server 名字引用，改地址只改这里
+servers: []
+#  - { name: "本地测试", host: "localhost", port: 25565 }
+#  - { name: "生存服", host: "play.example.com", port: 25565 }
+
 ai:
   provider: "zai"
   base_url: "https://api.z.ai/api/paas/v4/chat/completions"   # Z.ai OpenAI 兼容端点
@@ -15,11 +20,19 @@ ai:
   api_key: "${ZAI_API_KEY}"  # 未设置则进入 mock 模式（不调用真实 API）
   system_prompt: "你是Minecraft服务器里的AI玩家，用中文简短回答（一两句话），语气友好自然。"
   reply_prefix: "[%s] "      # %s 替换为机器人名字
-  reply_via: "chat"          # chat=真实玩家聊天 | plugin=经伴生插件广播（Paper偶发丢弃机器人聊天时的兜底） | both
+  reply_via: "chat"          # chat=真实玩家聊天 | plugin=经伴生插件广播 | both
   timeout_seconds: 30
 
 connection:
   reconnect_max_attempts: 5
+
+# 生存辅助（纯本地端，无需服务器插件）：死亡自动重生、低饥饿自动吃
+survival:
+  auto_respawn: true         # CombatKill 后自动回重生包
+  auto_eat: true             # 饥饿低于阈值自动吃快捷栏里的食物
+  eat_below_food: 10         # 触发进食的饥饿阈值（0-20）
+  dig_delay_ms: 900          # 挖掘 START→FINISH 间隔（空手近似值）
+  food_item_ids: []          # 可食用物品协议 id（留空用内置表；实测可补充）
 
 skin:                        # 皮肤上传（配合 paper 伴生插件）
   file: ""                   # 64x64 或 64x32 PNG 路径；空=不上传
@@ -27,7 +40,7 @@ skin:                        # 皮肤上传（配合 paper 伴生插件）
   upload_url: "http://localhost:8788/mcai/skin"
   token: "changeme"
 
-voice:                       # 语音（配合 paper 伴生插件 SVC 中继）
+voice:                       # 语音（配合 paper 伴生插件 SVC 中继）；角色级开关在 players[].svc
   enabled: false
   server_port: 8787          # bridge 监听端口，插件会 POST 语音到这里
   token: "changeme"
@@ -47,3 +60,12 @@ voice:                       # 语音（配合 paper 伴生插件 SVC 中继）
 probe:                       # --probe 自检模式参数
   name: "TestPlayer"
   timeout_ms: 25000
+
+players: []                  # AI 角色列表；server=引用 servers[].name，也可直接写 host/port
+#  - name: "AI_Jane"
+#    auth: "offline"
+#    server: "本地测试"       # 引用上面 servers 的名字
+#    model: "glm-5.3-flash"
+#    svc: false               # 显式开启语音（默认关）
+#    skin_file: ""
+#    skin_model: "classic"

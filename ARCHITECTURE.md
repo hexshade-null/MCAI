@@ -98,3 +98,54 @@ MainWindow：Logo 区 + 快速开始 + AI 玩家卡片列表（ProfileCard/Profi
 
 - `players[]` 缺省时由旧字段合成单档案；旧 config.yml 无需修改。
 - 根目录 fat JAR 路径与启动方式不变；新增 `--profile <名>`。
+
+---
+
+# 第三迭代增量（2026-08-30）：言出法随纯本地端 + 服务器列表 + iOS 17 + 语音分离
+
+设计决策：模仿 Numen 言出法随，但**完全不在服务器装插件**——协议机器人 + 客户端世界模型近似（无真实寻路/物理，代价：离线服自定义皮肤需插件、聊天广播兜底不可用时纯聊天）。
+
+## 世界模型（core/world/，纯本地端）
+
+```
+ClientboundLevelChunkWithLightPacket.getChunkData() 原始字节
+→ WorldModel 手写解码：每段 short blockCount + 方块 palette 容器 + 生物群系容器
+  1.21.11 实测校准：bpe 字节（0=单一值；≤8/≤3=indirect palette varInt 列表；超出=direct）；
+  存储 long 对齐打包（条目不跨 long）；★无长度前缀，long 数 = ceil(volume / floor(64/bpe))
+→ Chunk{int[32][]} 段数组缓存（整段空气=null 不占内存，LRU 256 区块）+ BlockUpdate/SectionBlocksUpdate 增量
+→ 查询：blockAt / groundY(自上而下扫描) / standable(高差 [-3,+1] 可走)
+维度切换（Respawn 包）自动清空。方块状态仅存数字 id（库无方块名注册表）。
+```
+
+- `EntityTracker`：Add/PosSync/Teleport/Move(Pos,PosRot)/Remove 跟踪 + PlayerInfo 列表 UUID→玩家名；提供 findPlayer/nearestHostile/nearestOfType/summarize。
+- `SurvivalManager`：Login 记 entityId；CombatKill→800ms 后 `ServerboundClientCommandPacket(ClientCommand.RESPAWN)`；SetHealth 跟踪血量/饥饿，低于阈值→找快捷栏食物（SetContent 槽 36..44 + SetSlot 单槽）→ `SetCarriedItem(slot)`+`UseItem(MAIN_HAND)`。食物协议 id 内置表（实测）：apple=893 bread=953 steak=1111 cooked_porkchop=984 golden_carrot=1232 baked_potato=1229 carrot=1227 pumpkin_pie=1241 cookie=1102；可 `survival.food_item_ids` 扩充。
+
+## 意图 → 动作（言出法随）
+
+```
+@bot 说话 → ChatHandler → IntentParser（有 key：LLM 严格 JSON {"say","actions[]}；无 key/失败：关键词规则）
+→ 动作序列 → ActionExecutor（PlayerController ticker 100ms 驱动，顺序执行）
+   walk_to/follow/stop/dig/attack/eat/command；行走阻挡（区块未加载/撞墙/深崖）自动停并聊天汇报
+→ 无动作意图回落普通聊天问答（AIBrain）
+```
+
+`PlayerController` 升级：世界感知贴地行走（groundY 逐列判断）、到达自动清目标、`position()/isMoving()` 供执行器轮询；找不到本地实体时跟随回落 paper 插件 /mcai/where。`BotFactory.assemble()` 统一装配（GUI/无头共用）：世界模型+实体跟踪+生存辅助+执行器+解析器一次接齐。
+
+## 服务器列表 + GUI（iOS 17）
+
+- `config.servers[] {name,host,port}` 独立维护；`players[].server` 按名引用（解析回填 host/port；引用缺失 WARN 并沿用旧字段）。ServerDialog：表格增删改。
+- 视觉：去掉 PCL 毛玻璃 → 纯色分层+大圆角(18px)+阴影；looked-up colors（`.theme-dark/.theme-light` 两套变量）单 CSS 双主题；PingFang SC/SF Pro 字体栈。
+- 主题：auto（macOS `AppleInterfaceStyle` 探测）/light/dark，持久化 `~/.mcaibridge/ui.properties`；中英双语 I18n 词表运行时切换（重建场景）。
+- SettingsDialog（总设置）：语音全局项（TTS/ASR/端口/令牌）+ 外观 + 服务器列表入口；角色级 `players[].svc` 开关在 ProfileDialog（ChoiceBox 选服务器/自定义 + svc toggle + 皮肤预览）。
+
+## 语音模块分离
+
+`players[].svc` 默认 false；VoiceServer 仅在"全局 voice.enabled 且存在已连接 svc=true 角色"时启动（8787 不再常驻）。现有用户配置需显式补 `svc: true`。
+
+## 实测校准记录（1.21.11-SNAPSHOT #18，Paper 1.21.11-132）
+
+- 区块格式：palette 后**无**存储长度 varInt；对齐打包（bpe=5 越界验证排除连续打包）。
+- `ClientboundEntityPositionSyncPacket` 与 `ClientboundTeleportEntityPacket` 并存，均需处理；移动包是顶级类。
+- `ClientCommand.RESPAWN`（非 PERFORM_RESPAWN）；`ServerboundClientCommandPacket(ClientCommand)`。
+- 1.21.11 物品/方块均为纯数字 id，库无名称注册表 → 食物 id 实测表。
+- 和平难度下饥饿效果不消耗 foodLevel（原版行为）——auto_eat 的阈值触发需在非和平服验证，协议链路（切槽+右键）已验证。

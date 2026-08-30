@@ -3,12 +3,14 @@ package com.mcaibridge.core;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mcaibridge.config.BridgeConfig;
+import com.mcaibridge.world.WorldModel;
 import org.geysermc.mcprotocollib.network.packet.Packet;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.object.Direction;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.Hand;
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.PlayerAction;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.player.ClientboundPlayerPositionPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.ServerboundChatCommandPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.level.ServerboundAcceptTeleportationPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundMovePlayerPosRotPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundPlayerActionPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.player.ServerboundSwingPacket;
@@ -28,15 +30,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 玩家实体控制器：位置同步、行走/跟随、挖掘、执行指令。
- * 移动为客户端权威：直线走向目标（贴地 y 保持服务器同步值），复杂地形会由服务器校正（橡皮筋）。
- * 跟随目标坐标经 paper 伴生插件 /mcai/where 查询。
+ * 行走为客户端权威：有世界模型时贴地走（读 groundY，跨 1 格台阶、拒绝撞墙/深崖），
+ * 无世界模型时保持服务器同步 y 直线走（迭代二行为）。
+ * 跟随目标的实体坐标由 EntityTracker 提供；找不到实体时回落 paper 插件 /mcai/where。
  */
 public class PlayerController {
     private static final Logger log = LoggerFactory.getLogger(PlayerController.class);
     private static final double WALK_SPEED = 4.0;      // 格/秒（疾走 5.6）
     private static final long TICK_MS = 100;
     private static final long WHERE_INTERVAL_MS = 1000;
-    private static final double FOLLOW_STOP_DIST = 2.0;
+    private static final double ARRIVE_DIST = 1.0;
 
     private final BridgeConfig cfg;
     private final MCBot bot;
@@ -48,6 +51,9 @@ public class PlayerController {
         t.setDaemon(true);
         return t;
     });
+
+    private volatile WorldModel world;
+    private volatile ActionExecutor executor;
 
     private volatile double x, y, z, yaw, pitch;
     private volatile boolean hasPos;
@@ -62,6 +68,14 @@ public class PlayerController {
         this.bot = bot;
     }
 
+    public void setWorld(WorldModel world) {
+        this.world = world;
+    }
+
+    public void setExecutor(ActionExecutor executor) {
+        this.executor = executor;
+    }
+
     public void start() {
         ticker.scheduleAtFixedRate(this::tick, TICK_MS, TICK_MS, TimeUnit.MILLISECONDS);
     }
@@ -74,7 +88,7 @@ public class PlayerController {
     public void handle(Packet packet) {
         if (packet instanceof ClientboundPlayerPositionPacket p) {
             // 1.21+ 服务器要求确认传送，否则忽略后续所有移动包
-            bot.send(new org.geysermc.mcprotocollib.protocol.packet.ingame.serverbound.level.ServerboundAcceptTeleportationPacket(p.getId()));
+            bot.send(new ServerboundAcceptTeleportationPacket(p.getId()));
             if (p.getRelatives().isEmpty()) {
                 org.cloudburstmc.math.vector.Vector3d pos = p.getPosition();
                 this.x = pos.getX();
@@ -88,7 +102,7 @@ public class PlayerController {
         }
     }
 
-    // ---- 指令 API（聊天指令调用）----
+    // ---- 指令 API（动作执行器/意图解析调用）----
 
     public void follow(String playerName) {
         followTarget = playerName;
@@ -100,12 +114,20 @@ public class PlayerController {
         followTarget = null;
         moveTargetX = tx;
         moveTargetZ = tz;
-        log.info("走向 ({}, {})", tx, tz);
     }
 
     public void stopMoving() {
         followTarget = null;
         moveTargetX = null;
+    }
+
+    public boolean isMoving() {
+        return moveTargetX != null && moveTargetZ != null;
+    }
+
+    /** 是否在跟随某玩家（插件查询模式）。 */
+    public boolean isFollowing() {
+        return followTarget != null;
     }
 
     public void digBelow() {
@@ -127,6 +149,11 @@ public class PlayerController {
         return hasPos;
     }
 
+    /** 当前位置 [x, y, z]；未同步时各分量为 0。 */
+    public double[] position() {
+        return new double[]{x, y, z};
+    }
+
     public String positionString() {
         return hasPos ? String.format("(%.1f, %.1f, %.1f)", x, y, z) : "(未知)";
     }
@@ -135,26 +162,34 @@ public class PlayerController {
 
     private void tick() {
         try {
+            ActionExecutor ex = executor;
+            if (ex != null) ex.tick();
             if (!hasPos) return;
-            if (followTarget != null && System.currentTimeMillis() - lastWhereQuery > WHERE_INTERVAL_MS) {
-                lastWhereQuery = System.currentTimeMillis();
-                queryWhere(followTarget);
-            }
             Double tx = moveTargetX, tz = moveTargetZ;
             if (tx != null && tz != null) {
                 double dx = tx - x, dz = tz - z;
                 double dist = Math.sqrt(dx * dx + dz * dz);
-                if (dist > 1.0) {
+                if (dist <= ARRIVE_DIST) {
+                    // 到达，清除目标
+                    moveTargetX = null;
+                    moveTargetZ = null;
+                } else {
                     double step = Math.min(WALK_SPEED * TICK_MS / 1000.0, dist);
                     double nx = x + dx / dist * step;
                     double nz = z + dz / dist * step;
-                    x = nx;
-                    z = nz;
-                    yaw = (float) Math.toDegrees(Math.atan2(-(dx), dz));
-                    sendMove();
+                    if (applyTerrain(nx, nz)) {
+                        x = nx;
+                        z = nz;
+                        yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+                        sendMove();
+                    }
                     idleCounter.set(0);
                     return;
                 }
+            }
+            if (followTarget != null && System.currentTimeMillis() - lastWhereQuery > WHERE_INTERVAL_MS) {
+                lastWhereQuery = System.currentTimeMillis();
+                queryWhere(followTarget);
             }
             // 空闲心跳：每 ~2 秒发一次原位包，防 AFK 踢出
             if (idleCounter.incrementAndGet() >= 20) {
@@ -164,6 +199,43 @@ public class PlayerController {
         } catch (Exception e) {
             log.debug("tick 异常: {}", e.toString());
         }
+    }
+
+    /**
+     * 世界感知贴地：返回 false 表示目标列不可走（未加载/撞墙/深崖），已自动停下并通知执行器。
+     */
+    private boolean applyTerrain(double nx, double nz) {
+        WorldModel wm = world;
+        if (wm == null) return true; // 无世界模型：沿用服务器同步 y（迭代二行为）
+        int bx = (int) Math.floor(nx);
+        int bz = (int) Math.floor(nz);
+        int feetY = (int) Math.floor(y);
+        int g = wm.groundY(bx, bz, feetY);
+        if (g == WorldModel.UNKNOWN) {
+            stopMoving();
+            notifyBlocked("前方地形未知（区块未加载）");
+            return false;
+        }
+        int targetFeet = g + 1;
+        if (targetFeet > feetY + 1) {
+            stopMoving();
+            notifyBlocked("前方有墙/高差超过 1 格");
+            return false;
+        }
+        if (targetFeet < feetY - 3) {
+            stopMoving();
+            notifyBlocked("前方是超过 3 格的深坑/悬崖");
+            return false;
+        }
+        y = targetFeet;
+        onGround = true;
+        return true;
+    }
+
+    private void notifyBlocked(String reason) {
+        log.info("行走受阻: {}", reason);
+        ActionExecutor ex = executor;
+        if (ex != null) ex.onWalkBlocked(reason);
     }
 
     private void sendMove() {

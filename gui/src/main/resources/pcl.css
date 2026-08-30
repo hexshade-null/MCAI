@@ -1,109 +1,176 @@
-/* MCAI Bridge — PCL 风格暗色主题 */
+/* MCAI — iOS 17 视觉：纯色分层 + 大圆角 + 阴影，无毛玻璃渐变。
+   明暗双主题经 .theme-dark / .theme-light 的 looked-up colors 切换。 */
+
+.theme-dark {
+    -mcai-bg: #050506;
+    -mcai-panel: #1C1C1E;
+    -mcai-card: #1C1C1E;
+    -mcai-fill: #2C2C2E;
+    -mcai-fill-2: #3A3A3C;
+    -mcai-text: #F2F2F7;
+    -mcai-text2: #98989F;
+    -mcai-sep: #38383A;
+    -mcai-accent: #0A84FF;
+    -mcai-on-accent: #FFFFFF;
+    -mcai-green: #30D158;
+    -mcai-yellow: #FFD60A;
+    -mcai-red: #FF453A;
+    -mcai-grey: #8E8E93;
+    -mcai-shadow: rgba(0, 0, 0, 0.6);
+    -mcai-log-bg: #111113;
+}
+
+.theme-light {
+    -mcai-bg: #F2F2F7;
+    -mcai-panel: #FFFFFF;
+    -mcai-card: #FFFFFF;
+    -mcai-fill: #E9E9EB;
+    -mcai-fill-2: #D8D8DC;
+    -mcai-text: #1C1C1E;
+    -mcai-text2: #6C6C70;
+    -mcai-sep: #D1D1D6;
+    -mcai-accent: #007AFF;
+    -mcai-on-accent: #FFFFFF;
+    -mcai-green: #34C759;
+    -mcai-yellow: #FFB300;
+    -mcai-red: #FF3B30;
+    -mcai-grey: #8E8E93;
+    -mcai-shadow: rgba(60, 60, 67, 0.18);
+    -mcai-log-bg: #FFFFFF;
+}
+
 .root {
-    -fx-background-color: #1E1E2E;
-    -fx-font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-    -fx-text-fill: #CDD6F4;
+    -fx-background-color: -mcai-bg;
+    -fx-font-family: "PingFang SC", "SF Pro Text", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    -fx-font-size: 13px;
+}
+
+/* ---- 顶栏 ---- */
+
+.logo-bar {
+    -fx-background-color: -mcai-panel;
+    -fx-padding: 16 20 6 20;
 }
 
 .logo-title {
-    -fx-font-size: 26px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #CDD6F4;
+    -fx-font-size: 28px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -mcai-text;
 }
 
 .logo-sub {
     -fx-font-size: 12px;
-    -fx-text-fill: #A6ADC8;
-}
-
-.logo-bar {
-    -fx-background-color: #181825;
-    -fx-padding: 14 18 14 18;
+    -fx-text-fill: -mcai-text2;
 }
 
 .quick-bar {
-    -fx-background-color: #181825;
-    -fx-padding: 10 18 10 18;
-    -fx-border-color: transparent transparent #313244 transparent;
+    -fx-background-color: -mcai-panel;
+    -fx-padding: 10 20 14 20;
+    -fx-border-color: transparent transparent -mcai-sep transparent;
     -fx-border-width: 0 0 1 0;
 }
 
-/* 半透明圆角“毛玻璃”卡片 */
+/* ---- 卡片 ---- */
+
 .card {
-    -fx-background-color: rgba(255, 255, 255, 0.055);
-    -fx-background-radius: 12;
-    -fx-border-radius: 12;
-    -fx-border-color: rgba(255, 255, 255, 0.08);
+    -fx-background-color: -mcai-card;
+    -fx-background-radius: 18;
+    -fx-border-radius: 18;
+    -fx-border-color: -mcai-sep;
     -fx-border-width: 1;
-    -fx-padding: 14;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 10, 0.1, 0, 3);
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, -mcai-shadow, 14, 0.08, 0, 5);
 }
 
 .card:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.09);
+    -fx-border-color: -mcai-fill-2;
 }
 
 .card-name {
-    -fx-font-size: 16px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #CDD6F4;
+    -fx-font-size: 17px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -mcai-text;
 }
 
 .card-server {
     -fx-font-size: 12px;
-    -fx-text-fill: #A6ADC8;
+    -fx-text-fill: -mcai-text2;
 }
 
-.status-dot-green  { -fx-background-color: #A6E3A1; -fx-min-width: 10; -fx-min-height: 10; -fx-max-width: 10; -fx-max-height: 10; -fx-background-radius: 5; }
-.status-dot-yellow { -fx-background-color: #F9E2AF; -fx-min-width: 10; -fx-min-height: 10; -fx-max-width: 10; -fx-max-height: 10; -fx-background-radius: 5; }
-.status-dot-red    { -fx-background-color: #F38BA8; -fx-min-width: 10; -fx-min-height: 10; -fx-max-width: 10; -fx-max-height: 10; -fx-background-radius: 5; }
-.status-dot-grey   { -fx-background-color: #6C7086; -fx-min-width: 10; -fx-min-height: 10; -fx-max-width: 10; -fx-max-height: 10; -fx-background-radius: 5; }
+.card-badge {
+    -fx-background-color: -mcai-fill;
+    -fx-background-radius: 8;
+    -fx-padding: 1 7 2 7;
+    -fx-font-size: 11px;
+    -fx-text-fill: -mcai-text2;
+}
+
+/* ---- 状态灯 ---- */
+
+.status-dot-green  { -fx-background-color: -mcai-green;  -fx-min-width: 9; -fx-min-height: 9; -fx-max-width: 9; -fx-max-height: 9; -fx-background-radius: 5; }
+.status-dot-yellow { -fx-background-color: -mcai-yellow; -fx-min-width: 9; -fx-min-height: 9; -fx-max-width: 9; -fx-max-height: 9; -fx-background-radius: 5; }
+.status-dot-red    { -fx-background-color: -mcai-red;    -fx-min-width: 9; -fx-min-height: 9; -fx-max-width: 9; -fx-max-height: 9; -fx-background-radius: 5; }
+.status-dot-grey   { -fx-background-color: -mcai-grey;   -fx-min-width: 9; -fx-min-height: 9; -fx-max-width: 9; -fx-max-height: 9; -fx-background-radius: 5; }
 
 .status-text {
     -fx-font-size: 11px;
-    -fx-text-fill: #A6ADC8;
+    -fx-text-fill: -mcai-text2;
 }
+
+/* ---- 按钮：iOS 实心/填充灰两种 ---- */
 
 .btn-primary {
-    -fx-background-color: #89B4FA;
-    -fx-text-fill: #1E1E2E;
-    -fx-font-weight: bold;
-    -fx-background-radius: 8;
-    -fx-padding: 6 16 6 16;
+    -fx-background-color: -mcai-accent;
+    -fx-text-fill: -mcai-on-accent;
+    -fx-font-weight: 600;
+    -fx-background-radius: 12;
+    -fx-padding: 7 18 7 18;
     -fx-cursor: hand;
 }
 
-.btn-primary:hover { -fx-background-color: #B4BEFE; }
-.btn-primary:disabled { -fx-background-color: #585B70; -fx-text-fill: #A6ADC8; }
+.btn-primary:hover { -fx-opacity: 0.85; }
+.btn-primary:disabled { -fx-background-color: -mcai-fill; -fx-text-fill: -mcai-text2; }
 
 .btn-ghost {
-    -fx-background-color: transparent;
-    -fx-text-fill: #CDD6F4;
-    -fx-background-radius: 8;
-    -fx-border-radius: 8;
-    -fx-border-color: #45475A;
-    -fx-border-width: 1;
-    -fx-padding: 5 12 5 12;
+    -fx-background-color: -mcai-fill;
+    -fx-text-fill: -mcai-accent;
+    -fx-font-weight: 600;
+    -fx-background-radius: 12;
+    -fx-padding: 6 14 6 14;
+    -fx-cursor: hand;
+    -fx-border-width: 0;
+}
+
+.btn-ghost:hover { -fx-background-color: -mcai-fill-2; }
+
+.btn-danger {
+    -fx-background-color: -mcai-fill;
+    -fx-text-fill: -mcai-red;
+    -fx-font-weight: 600;
+    -fx-background-radius: 12;
+    -fx-padding: 6 14 6 14;
     -fx-cursor: hand;
 }
 
-.btn-ghost:hover { -fx-background-color: rgba(255,255,255,0.08); }
-.btn-ghost:disabled { -fx-text-fill: #585B70; -fx-border-color: #313244; }
+.btn-danger:hover { -fx-background-color: -mcai-fill-2; }
+
+/* ---- 日志 ---- */
 
 .log-area {
-    -fx-control-inner-background: #181825;
-    -fx-background-color: #181825;
-    -fx-text-fill: #CDD6F4;
-    -fx-font-family: "Menlo", monospace;
+    -fx-control-inner-background: -mcai-log-bg;
+    -fx-background-color: -mcai-log-bg;
+    -fx-text-fill: -mcai-text;
+    -fx-highlight-fill: -mcai-accent;
+    -fx-font-family: "Menlo", "SF Mono", monospace;
     -fx-font-size: 12px;
 }
 
 .titled-pane > .title {
-    -fx-background-color: #181825;
+    -fx-background-color: -mcai-panel;
 }
 
 .titled-pane > .title > .text {
-    -fx-fill: #A6ADC8;
+    -fx-fill: -mcai-text2;
 }
 
 .titled-pane > .content {
@@ -111,18 +178,58 @@
     -fx-border-color: transparent;
 }
 
-.label { -fx-text-fill: #CDD6F4; }
+/* ---- 表单 ---- */
 
-.text-field, .password-field, .choice-box {
-    -fx-background-color: #313244;
-    -fx-text-fill: #CDD6F4;
-    -fx-prompt-text-fill: #6C7086;
-    -fx-background-radius: 6;
-    -fx-border-radius: 6;
+.label { -fx-text-fill: -mcai-text; }
+
+.label.form-label { -fx-text-fill: -mcai-text2; }
+
+.text-field, .password-field, .choice-box, .combo-box {
+    -fx-background-color: -mcai-fill;
+    -fx-text-fill: -mcai-text;
+    -fx-prompt-text-fill: -mcai-text2;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-padding: 4 8 4 8;
 }
+
+.choice-box .label, .combo-box .label { -fx-text-fill: -mcai-text; }
+
+.check-box .text { -fx-fill: -mcai-text; }
 
 .scroll-pane, .scroll-pane .viewport {
     -fx-background-color: transparent;
 }
 
-.flow-cards { -fx-padding: 14; }
+.flow-cards { -fx-padding: 16 20 16 20; }
+
+/* ---- 对话框 ---- */
+
+.dialog-pane {
+    -fx-background-color: -mcai-panel;
+}
+
+.dialog-pane .label { -fx-text-fill: -mcai-text; }
+
+.section-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -mcai-text;
+    -fx-padding: 6 0 2 0;
+}
+
+.list-view {
+    -fx-background-color: -mcai-card;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+}
+
+.list-view .list-cell {
+    -fx-text-fill: -mcai-text;
+    -fx-background-color: transparent;
+}
+
+.list-view .list-cell:filled:selected {
+    -fx-background-color: -mcai-accent;
+    -fx-text-fill: -mcai-on-accent;
+}

@@ -51,6 +51,9 @@ public class MCBot {
     private volatile ClientSession session;
     private volatile ChatHandler chatHandler;
     private volatile PlayerController controller;
+    private volatile com.mcaibridge.world.WorldModel world;
+    private volatile com.mcaibridge.world.EntityTracker entities;
+    private volatile com.mcaibridge.world.SurvivalManager survival;
     private volatile boolean shutdown;
 
     public MCBot(BridgeConfig cfg, AuthResult auth, Listener listener) {
@@ -65,6 +68,18 @@ public class MCBot {
 
     public void setController(PlayerController controller) {
         this.controller = controller;
+    }
+
+    public void setWorld(com.mcaibridge.world.WorldModel world) {
+        this.world = world;
+    }
+
+    public void setEntities(com.mcaibridge.world.EntityTracker entities) {
+        this.entities = entities;
+    }
+
+    public void setSurvival(com.mcaibridge.world.SurvivalManager survival) {
+        this.survival = survival;
     }
 
     /** 发送任意协议包（移动/挖掘/指令等）。 */
@@ -117,6 +132,30 @@ public class MCBot {
 
             @Override
             public void packetReceived(Session ses, Packet packet) {
+                com.mcaibridge.world.WorldModel wm = world;
+                if (wm != null) {
+                    try {
+                        wm.handle(packet);
+                    } catch (Exception e) {
+                        log.debug("世界模型处理包异常: {}", e.toString());
+                    }
+                }
+                com.mcaibridge.world.EntityTracker et = entities;
+                if (et != null) {
+                    try {
+                        et.handle(packet);
+                    } catch (Exception e) {
+                        log.debug("实体跟踪处理包异常: {}", e.toString());
+                    }
+                }
+                com.mcaibridge.world.SurvivalManager sm = survival;
+                if (sm != null) {
+                    try {
+                        sm.handle(packet);
+                    } catch (Exception e) {
+                        log.debug("生存辅助处理包异常: {}", e.toString());
+                    }
+                }
                 PlayerController ctl = controller;
                 if (ctl != null) {
                     try {
@@ -167,6 +206,8 @@ public class MCBot {
         if (handler != null) handler.shutdown();
         PlayerController ctl = controller;
         if (ctl != null) ctl.stop();
+        com.mcaibridge.world.SurvivalManager sm = survival;
+        if (sm != null) sm.shutdown();
         ClientSession s = session;
         if (s != null) {
             try {
