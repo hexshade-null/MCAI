@@ -55,6 +55,8 @@ public class PlayerController {
     private volatile WorldModel world;
     private volatile ActionExecutor executor;
     private volatile com.mcaibridge.world.SurvivalManager survival;
+    private volatile com.mcaibridge.physics.PhysicsEngine physics;
+    private boolean sprintState;
     /** 被击退速度（SetEntityMotion(self) 原始值；M2 物理引擎消费）。 */
     private volatile org.cloudburstmc.math.vector.Vector3d knockbackVelocity;
     private static final double EYE_HEIGHT = 1.62;
@@ -106,6 +108,7 @@ public class PlayerController {
                 this.pitch = p.getXRot();
                 this.hasPos = true;
                 log.info("位置同步: ({}, {}, {})", x, y, z);
+                syncPhysics();
             }
         } else if (packet instanceof org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundSetEntityMotionPacket p) {
             com.mcaibridge.world.SurvivalManager sm = survival;
@@ -113,6 +116,17 @@ public class PlayerController {
                 knockbackVelocity = p.getMovement();
                 log.info("收到自身击退速度: ({}, {}, {})", p.getMovement().getX(), p.getMovement().getY(), p.getMovement().getZ());
             }
+        }
+    }
+
+    /** 服务器位置校正/重生：物理引擎硬重置。 */
+    private void syncPhysics() {
+        if (world == null) return;
+        if (physics == null) {
+            physics = new com.mcaibridge.physics.PhysicsEngine(world, x, y, z);
+            log.info("物理引擎已启用（50ms/tick，重力+碰撞+流体）");
+        } else {
+            physics.teleport(x, y, z);
         }
     }
 
@@ -197,27 +211,72 @@ public class PlayerController {
             ActionExecutor ex = executor;
             if (ex != null) ex.tick();
             if (!hasPos) return;
+
+            // 击退速度注入物理引擎
+            var kb = consumeKnockback();
+            if (kb != null && physics != null) {
+                physics.setVelocity(kb.getX(), kb.getY(), kb.getZ());
+            }
+
             Double tx = moveTargetX, tz = moveTargetZ;
-            if (tx != null && tz != null) {
+            boolean moving = tx != null && tz != null;
+            if (moving) {
                 double dx = tx - x, dz = tz - z;
-                double dist = Math.sqrt(dx * dx + dz * dz);
-                if (dist <= ARRIVE_DIST) {
-                    // 到达，清除目标
+                if (dx * dx + dz * dz <= ARRIVE_DIST * ARRIVE_DIST) {
                     moveTargetX = null;
                     moveTargetZ = null;
-                } else {
-                    double step = Math.min(WALK_SPEED * TICK_MS / 1000.0, dist);
-                    double nx = x + dx / dist * step;
-                    double nz = z + dz / dist * step;
-                    if (applyTerrain(nx, nz)) {
-                        x = nx;
-                        z = nz;
-                        yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
-                        sendMove();
-                    }
-                    idleCounter.set(0);
-                    return;
+                    moving = false;
                 }
+            }
+
+            if (physics != null) {
+                // 物理路径：意图 → 50ms×2 积分 → 采点发包
+                if (moving) {
+                    double dx = tx - x, dz = tz - z;
+                    double dist = Math.sqrt(dx * dx + dz * dz);
+                    boolean sprint = dist > 10 && survival != null && survival.entityId() > 0;
+                    double speed = sprint ? com.mcaibridge.physics.VanillaPhysics.SPRINT_SPEED
+                            : com.mcaibridge.physics.VanillaPhysics.WALK_SPEED;
+                    physics.setIntent(dx, dz, speed, sprint);
+                    yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+                    if (physics.isCollidedHorizontal() || physics.isInWater() || physics.isOnLadder()) {
+                        physics.requestJump(); // 跨障碍/游泳上浮/爬梯
+                    }
+                    updateSprint(sprint);
+                } else {
+                    physics.setIntent(0, 0, 0, false);
+                    updateSprint(false);
+                    if (followTarget != null && System.currentTimeMillis() - lastWhereQuery > WHERE_INTERVAL_MS) {
+                        lastWhereQuery = System.currentTimeMillis();
+                        queryWhere(followTarget);
+                    }
+                }
+                physics.tick();
+                physics.tick();
+                x = physics.getX();
+                y = physics.getY();
+                z = physics.getZ();
+                onGround = physics.isOnGround();
+                sendMove();
+                idleCounter.set(0);
+                return;
+            }
+
+            // 无世界模型时的直线路径（迭代二行为）
+            if (moving) {
+                double dx = tx - x, dz = tz - z;
+                double dist = Math.sqrt(dx * dx + dz * dz);
+                double step = Math.min(WALK_SPEED * TICK_MS / 1000.0, dist);
+                double nx = x + dx / dist * step;
+                double nz = z + dz / dist * step;
+                if (applyTerrain(nx, nz)) {
+                    x = nx;
+                    z = nz;
+                    yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+                    sendMove();
+                }
+                idleCounter.set(0);
+                return;
             }
             if (followTarget != null && System.currentTimeMillis() - lastWhereQuery > WHERE_INTERVAL_MS) {
                 lastWhereQuery = System.currentTimeMillis();
@@ -230,6 +289,15 @@ public class PlayerController {
             }
         } catch (Exception e) {
             log.debug("tick 异常: {}", e.toString());
+        }
+    }
+
+    /** 疾跑状态包（状态变化才发）。 */
+    private void updateSprint(boolean sprint) {
+        if (sprint == sprintState) return;
+        sprintState = sprint;
+        if (survival != null && survival.entityId() > 0) {
+            com.mcaibridge.protocol.ActionStateSender.setSprinting(bot, survival.entityId(), sprint);
         }
     }
 
