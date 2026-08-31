@@ -34,6 +34,7 @@ public class ProfileDialog extends Stage {
     private final ChoiceBox<String> authChoice = new ChoiceBox<>();
     private final PasswordField apiKeyField = new PasswordField();
     private final TextField modelField = new TextField();
+    private final TextField baseUrlField = new TextField();
     private final CheckBox svcToggle = new CheckBox(I18n.t("profile.svc"));
     private final TextField skinPathField = new TextField();
     private final ChoiceBox<String> skinModelChoice = new ChoiceBox<>();
@@ -60,6 +61,8 @@ public class ProfileDialog extends Stage {
         authChoice.setValue(profile.auth);
         apiKeyField.setText(profile.aiApiKey);
         modelField.setText(profile.aiModel);
+        baseUrlField.setText(profile.aiBaseUrl);
+        baseUrlField.setPromptText(baseCfg.aiBaseUrl);
         svcToggle.setSelected(profile.svc);
         skinPathField.setText(profile.skinFile);
         skinModelChoice.setValue(profile.skinModel);
@@ -106,6 +109,8 @@ public class ProfileDialog extends Stage {
         grid.add(apiKeyField, 1, r++);
         grid.add(new Label(I18n.t("profile.model")), 0, r);
         grid.add(modelField, 1, r++);
+        grid.add(new Label(I18n.t("profile.baseUrl")), 0, r);
+        grid.add(baseUrlField, 1, r++);
         grid.add(new Label(""), 0, r);
         grid.add(svcToggle, 1, r++);
 
@@ -202,6 +207,7 @@ public class ProfileDialog extends Stage {
         p.auth = authChoice.getValue();
         p.aiApiKey = apiKeyField.getText().trim();
         p.aiModel = modelField.getText().trim();
+        p.aiBaseUrl = baseUrlField.getText().trim();
         p.svc = svcToggle.isSelected();
         p.skinFile = skinPathField.getText().trim();
         p.skinModel = skinModelChoice.getValue();

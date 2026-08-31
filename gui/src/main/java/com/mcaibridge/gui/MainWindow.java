@@ -305,6 +305,9 @@ public class MainWindow extends Application {
             }
             sb.append("ai:\n  model: \"").append(first.aiModel)
                     .append("\"\n  api_key: \"").append(first.aiApiKey.replace("\"", "\\\"")).append("\"\n");
+            if (baseCfg.aiBaseUrl != null && !baseCfg.aiBaseUrl.isBlank()) {
+                sb.append("  base_url: \"").append(baseCfg.aiBaseUrl.replace("\"", "\\\"")).append("\"\n");
+            }
             sb.append("skin:\n  upload_url: \"").append(baseCfg.skinUploadUrl).append("\"\n  token: \"").append(baseCfg.skinToken).append("\"\n");
             sb.append("survival:\n  auto_respawn: ").append(baseCfg.autoRespawn)
                     .append("\n  auto_eat: ").append(baseCfg.autoEat)
@@ -322,6 +325,9 @@ public class MainWindow extends Application {
                 }
                 sb.append("    host: \"").append(p.serverHost).append("\"\n    port: ").append(p.serverPort).append("\n");
                 sb.append("    model: \"").append(p.aiModel).append("\"\n");
+                if (p.aiBaseUrl != null && !p.aiBaseUrl.isBlank()) {
+                    sb.append("    base_url: \"").append(p.aiBaseUrl.replace("\"", "\\\"")).append("\"\n");
+                }
                 sb.append("    svc: ").append(p.svc).append("\n");
                 sb.append("    skin_file: \"").append(p.skinFile.replace("\\", "\\\\")).append("\"\n");
                 sb.append("    skin_model: \"").append(p.skinModel).append("\"\n");

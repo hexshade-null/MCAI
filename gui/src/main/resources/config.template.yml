@@ -66,6 +66,7 @@ players: []                  # AI 角色列表；server=引用 servers[].name，
 #    auth: "offline"
 #    server: "本地测试"       # 引用上面 servers 的名字
 #    model: "glm-5.3-flash"
+#    base_url: ""             # OpenAI 兼容端点；留空用全局 ai.base_url（接其他厂商/代理时填）
 #    svc: false               # 显式开启语音（默认关）
 #    skin_file: ""
 #    skin_model: "classic"

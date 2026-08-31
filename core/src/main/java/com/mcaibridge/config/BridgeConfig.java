@@ -52,6 +52,7 @@ public class BridgeConfig {
         public int serverPort = 25565;
         public String aiModel = "glm-5.3-flash";
         public String aiApiKey = "";
+        public String aiBaseUrl = "";              // OpenAI 兼容端点；空=用全局 ai.base_url
         public String skinFile = "";               // 64x64/64x32 PNG；空=无皮肤
         public String skinModel = "classic";       // classic | slim
         public boolean svc = false;                // 是否启用 Simple Voice Chat 语音（默认关，显式开启）
@@ -66,6 +67,7 @@ public class BridgeConfig {
             p.serverPort = (int) num(m, "port", p.serverPort);
             p.aiModel = str(m, "model", p.aiModel);
             p.aiApiKey = str(m, "api_key", p.aiApiKey);
+            p.aiBaseUrl = str(m, "base_url", p.aiBaseUrl);
             p.skinFile = str(m, "skin_file", p.skinFile);
             p.skinModel = str(m, "skin_model", p.skinModel);
             p.svc = bool(m, "svc", p.svc);
@@ -158,6 +160,9 @@ public class BridgeConfig {
             c.serverPort = p.serverPort;
             c.aiModel = p.aiModel;
             c.aiApiKey = p.aiApiKey;
+            if (p.aiBaseUrl != null && !p.aiBaseUrl.isBlank()) {
+                c.aiBaseUrl = p.aiBaseUrl;         // 角色级端点覆盖全局
+            }
             c.skinFile = p.skinFile;
             c.skinModel = p.skinModel;
             c.svc = p.svc;
@@ -365,6 +370,10 @@ public class BridgeConfig {
     private void interpolate() {
         for (ServerEntry s : servers) {
             s.host = interp(s.host);
+        }
+        for (PlayerProfile p : players) {
+            p.aiBaseUrl = interp(p.aiBaseUrl);
+            p.aiApiKey = interp(p.aiApiKey);
         }
         aiBaseUrl = interp(aiBaseUrl);
         aiApiKey = interp(aiApiKey);

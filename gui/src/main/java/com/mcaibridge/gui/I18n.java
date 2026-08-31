@@ -45,6 +45,8 @@ public final class I18n {
         zh.put("profile.auth", "登录方式:");
         zh.put("profile.apiKey", "API Key:");
         zh.put("profile.model", "AI 模型:");
+        zh.put("profile.baseUrl", "Base URL:");
+        zh.put("profile.baseUrlHint", "留空用全局地址");
         zh.put("profile.skinFile", "皮肤文件:");
         zh.put("profile.skinModel", "皮肤模型:");
         zh.put("profile.svc", "启用语音 (SVC)");
@@ -107,6 +109,8 @@ public final class I18n {
         en.put("profile.auth", "Auth:");
         en.put("profile.apiKey", "API Key:");
         en.put("profile.model", "AI model:");
+        en.put("profile.baseUrl", "Base URL:");
+        en.put("profile.baseUrlHint", "empty = global URL");
         en.put("profile.skinFile", "Skin file:");
         en.put("profile.skinModel", "Skin model:");
         en.put("profile.svc", "Enable voice (SVC)");
