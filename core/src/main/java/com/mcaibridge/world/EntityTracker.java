@@ -12,6 +12,7 @@ import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.Clie
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundMoveEntityPosPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundMoveEntityPosRotPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundRemoveEntitiesPacket;
+import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundSetEntityDataPacket;
 import org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundTeleportEntityPacket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,10 +70,12 @@ public class EntityTracker {
         if (packet instanceof ClientboundAddEntityPacket p) {
             entities.put(p.getEntityId(), new TrackedEntity(p.getEntityId(), p.getUuid(), p.getType(),
                     p.getX(), p.getY(), p.getZ(), p.getYaw()));
+            log.debug("add-entity id={} type={} ({}, {}, {})", p.getEntityId(), p.getType(), p.getX(), p.getY(), p.getZ());
         } else if (packet instanceof ClientboundEntityPositionSyncPacket p) {
-            move(p.getId(), p.getPosition(), p.getYRot());
+            // 绝对坐标同步（注意：与 Move 系增量包走不同路径，见 setAbsolute）
+            setAbsolute(p.getId(), p.getPosition(), p.getYRot());
         } else if (packet instanceof ClientboundTeleportEntityPacket p) {
-            move(p.getId(), p.getPosition(), p.getYRot());
+            setAbsolute(p.getId(), p.getPosition(), p.getYRot());
         } else if (packet instanceof ClientboundMoveEntityPosRotPacket p) {
             move(p.getEntityId(), p.getMoveX(), p.getMoveY(), p.getMoveZ(), p.getYaw());
         } else if (packet instanceof ClientboundMoveEntityPosPacket p) {
@@ -90,11 +93,24 @@ public class EntityTracker {
             }
         } else if (packet instanceof ClientboundPlayerInfoRemovePacket p) {
             for (UUID u : p.getProfileIds()) playerNames.remove(u);
+        } else if (packet instanceof ClientboundSetEntityDataPacket p) {
+            for (org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.EntityMetadata<?, ?> m : p.getMetadata()) {
+                if (m.getType() instanceof org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.FloatMetadataType) {
+                    log.debug("entity-meta id={} float[{}] = {}", p.getEntityId(), m.getId(), m.getValue());
+                }
+            }
         }
     }
 
-    private void move(int id, Vector3d pos, float yaw) {
-        move(id, pos.getX(), pos.getY(), pos.getZ(), yaw);
+    /** 传送/位置同步：直接覆盖绝对坐标（不能累加，否则每次同步都漂移一次）。 */
+    private void setAbsolute(int id, Vector3d pos, float yaw) {
+        TrackedEntity e = entities.get(id);
+        if (e == null) return;
+        e.x = pos.getX();
+        e.y = pos.getY();
+        e.z = pos.getZ();
+        e.yaw = yaw;
+        e.seen = System.currentTimeMillis();
     }
 
     private void move(int id, double dx, double dy, double dz, Float yaw) {
@@ -128,12 +144,18 @@ public class EntityTracker {
         return null;
     }
 
-    /** 距 (px,pz) 最近的敌对生物（≤ maxDist 格）。 */
-    public TrackedEntity nearestHostile(double px, double pz, double maxDist) {
+    /** 调试用：当前跟踪到的全部僵尸。 */
+    public java.util.List<TrackedEntity> zombies() {
+        return entities.values().stream().filter(e -> e.type == EntityType.ZOMBIE).collect(java.util.stream.Collectors.toList());
+    }
+
+    /** 距 (px,py,pz) 最近的敌对生物（水平 ≤ maxDist 且垂直 ≤ maxDy——地下怪不可达不该选中）。 */
+    public TrackedEntity nearestHostile(double px, double py, double pz, double maxDist, double maxDy) {
         TrackedEntity best = null;
         double bestD = maxDist * maxDist;
         for (TrackedEntity e : entities.values()) {
             if (!HOSTILE.contains(e.type)) continue;
+            if (Math.abs(e.y - py) > maxDy) continue;
             double d = e.dist2(px, pz);
             if (d <= bestD) {
                 bestD = d;

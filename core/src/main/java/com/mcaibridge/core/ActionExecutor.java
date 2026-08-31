@@ -31,8 +31,7 @@ public class ActionExecutor {
     private static final long WALK_TIMEOUT_MS = 60_000;
     private static final long FOLLOW_TIMEOUT_MS = 120_000;
     private static final long ATTACK_TIMEOUT_MS = 10_000;
-    private static final double ATTACK_RANGE = 3.2;
-    private static final long ATTACK_INTERVAL_MS = 550;
+    private static final double ATTACK_RANGE = 2.8;      // Paper 眼-命中箱 3.0 校验留余量
     private static final long SWING_INTERVAL_MS = 250;
 
     /** 单个动作：type + 原始参数。 */
@@ -149,7 +148,12 @@ public class ActionExecutor {
                 bot.send(new ServerboundPlayerActionPacket(PlayerAction.START_DIGGING, pos, Direction.DOWN, 0));
                 bot.send(new ServerboundSwingPacket(Hand.MAIN_HAND));
             }
-            case "attack" -> attackEntityId = resolveTargetId(argS(a, "target", ""));
+            case "attack" -> {
+                attackEntityId = resolveTargetId(argS(a, "target", ""));
+                if (attackEntityId >= 0 && survival.entityId() > 0) {
+                    controller.faceTo(entities.get(attackEntityId).x, entities.get(attackEntityId).y, entities.get(attackEntityId).z);
+                }
+            }
             case "eat" -> {
                 boolean ok = survival.eatNow();
                 if (!ok) report("快捷栏里没有能吃的");
@@ -241,10 +245,22 @@ public class ActionExecutor {
                     return false;
                 }
                 controller.stopMoving();
-                if (now - lastSubStep >= ATTACK_INTERVAL_MS) {
+                // 冷却节奏：手持武器冷却 + 抖动（原版 1.9 战斗，伤害按冷却比例结算）
+                long cooldown = (long) (com.mcaibridge.mining.ToolSpeedRegistry
+                        .attackCooldownSeconds(survivalHeldItem()) * 1000) + 150 + (long) (Math.random() * 150);
+                if (now - lastSubStep >= cooldown) {
                     lastSubStep = now;
+                    // 原版疾跑击退：攻击瞬间保持疾跑状态，命中后立即取消
+                    boolean sprintHit = cfg.sprintKnockback && survival.entityId() > 0;
+                    controller.faceTo(e.x, e.y + 1.0, e.z);
+                    if (sprintHit) {
+                        com.mcaibridge.protocol.ActionStateSender.setSprinting(bot, survival.entityId(), true);
+                    }
                     bot.send(new ServerboundInteractPacket(e.id, InteractAction.ATTACK, false));
                     bot.send(new ServerboundSwingPacket(Hand.MAIN_HAND));
+                    if (sprintHit) {
+                        com.mcaibridge.protocol.ActionStateSender.setSprinting(bot, survival.entityId(), false);
+                    }
                 }
                 return false;
             }
@@ -254,10 +270,20 @@ public class ActionExecutor {
         }
     }
 
+    /** 当前手持物品 id（供攻击冷却/后续挖掘速度用）。 */
+    private int survivalHeldItem() {
+        return survival.heldItem();
+    }
+
     private int resolveTargetId(String target) {
         double[] p = controller.position();
         if (target == null || target.isBlank()) {
-            TrackedEntity h = entities.nearestHostile(p[0], p[2], 24);
+            TrackedEntity h = entities.nearestHostile(p[0], p[1], p[2], 24, 10);
+            log.info("resolveTarget: pos=({},{},{}) tracked={} nearest={}", p[0], p[1], p[2], entities.size(),
+                    h != null ? h.type + "@" + h.id : "none");
+            if (h == null) {
+                entities.zombies().forEach(z -> log.info("  tracked-zombie id={} y={} dist2={}", z.id, z.y, z.dist2(p[0], p[2])));
+            }
             return h != null ? h.id : -1;
         }
         TrackedEntity e = resolveEntity(target);
@@ -268,7 +294,7 @@ public class ActionExecutor {
         if (target == null || target.isBlank()) return null;
         TrackedEntity e = entities.findPlayer(target);
         if (e == null) e = entities.nearestOfType(target, controller.position()[0], controller.position()[2], 32);
-        if (e == null) e = entities.nearestHostile(controller.position()[0], controller.position()[2], 24);
+        if (e == null) e = entities.nearestHostile(controller.position()[0], controller.position()[1], controller.position()[2], 24, 10);
         return e;
     }
 

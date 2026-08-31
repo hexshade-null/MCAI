@@ -47,6 +47,7 @@ public class SurvivalManager {
     private volatile float health = 20f;
     private volatile int food = 20;
     private final int[] hotbar = new int[9];   // 物品协议 id，0=空
+    private volatile int heldSlot = 0;         // 当前手持快捷栏位
     private volatile long lastEat;
     private volatile boolean dead;
     private volatile Runnable deathListener;
@@ -84,7 +85,15 @@ public class SurvivalManager {
             if (p.getContainerId() == 0) acceptInventory(p.getItems());
         } else if (packet instanceof ClientboundContainerSetSlotPacket p) {
             if (p.getContainerId() == 0) acceptSlot(p.getSlot(), p.getItem());
+        } else if (packet instanceof org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.player.ClientboundSetHeldSlotPacket p) {
+            heldSlot = p.getSlot();
         }
+    }
+
+    /** 当前手持物品协议 id（0=空手）。 */
+    public int heldItem() {
+        int s = heldSlot;
+        return (s >= 0 && s < 9) ? hotbar[s] : 0;
     }
 
     private void acceptSlot(int slot, ItemStack item) {
@@ -130,6 +139,7 @@ public class SurvivalManager {
         }
         lastEat = System.currentTimeMillis();
         bot.send(new ServerboundSetCarriedItemPacket(slot));
+        heldSlot = slot;
         bot.send(new ServerboundUseItemPacket(Hand.MAIN_HAND, 0, 0f, 0f));
         bot.send(new ServerboundSwingPacket(Hand.MAIN_HAND));
         log.info("进食: 快捷栏槽位 {} (物品 id {})", slot, hotbar[slot]);
@@ -170,6 +180,11 @@ public class SurvivalManager {
 
     public float getHealth() {
         return health;
+    }
+
+    /** 自己的协议实体 id（登录包记录；疾跑命令包/被击退过滤都要用）。 */
+    public int entityId() {
+        return entityId;
     }
 
     public int getFood() {

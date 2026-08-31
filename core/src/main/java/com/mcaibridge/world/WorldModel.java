@@ -121,6 +121,7 @@ public class WorldModel {
     // ---- 写入 ----
 
     private void setBlock(Vector3i pos, int stateId) {
+        log.debug("block-update ({},{},{}) = {}", pos.getX(), pos.getY(), pos.getZ(), stateId);
         Chunk c = chunks.get(chunkKey(pos.getX() >> 4, pos.getZ() >> 4));
         if (c == null) return;
         int idx = sectionIndex(pos.getY());

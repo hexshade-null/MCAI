@@ -54,6 +54,10 @@ public class PlayerController {
 
     private volatile WorldModel world;
     private volatile ActionExecutor executor;
+    private volatile com.mcaibridge.world.SurvivalManager survival;
+    /** 被击退速度（SetEntityMotion(self) 原始值；M2 物理引擎消费）。 */
+    private volatile org.cloudburstmc.math.vector.Vector3d knockbackVelocity;
+    private static final double EYE_HEIGHT = 1.62;
 
     private volatile double x, y, z, yaw, pitch;
     private volatile boolean hasPos;
@@ -74,6 +78,10 @@ public class PlayerController {
 
     public void setExecutor(ActionExecutor executor) {
         this.executor = executor;
+    }
+
+    public void setSurvival(com.mcaibridge.world.SurvivalManager survival) {
+        this.survival = survival;
     }
 
     public void start() {
@@ -99,7 +107,31 @@ public class PlayerController {
                 this.hasPos = true;
                 log.info("位置同步: ({}, {}, {})", x, y, z);
             }
+        } else if (packet instanceof org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundSetEntityMotionPacket p) {
+            com.mcaibridge.world.SurvivalManager sm = survival;
+            if (sm != null && p.getEntityId() == sm.entityId()) {
+                knockbackVelocity = p.getMovement();
+                log.info("收到自身击退速度: ({}, {}, {})", p.getMovement().getX(), p.getMovement().getY(), p.getMovement().getZ());
+            }
         }
+    }
+
+    /**
+     * 面向目标并立即上报位置+朝向（攻击前的状态刷新，服务端据此计算击退方向/距离校验）。
+     */
+    public void faceTo(double tx, double ty, double tz) {
+        double dx = tx - x, dy = ty - (y + EYE_HEIGHT), dz = tz - z;
+        double horiz = Math.sqrt(dx * dx + dz * dz);
+        yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+        pitch = (float) -Math.toDegrees(Math.atan2(dy, horiz));
+        sendMove();
+    }
+
+    /** 被击退速度（未收到时 null）。 */
+    public org.cloudburstmc.math.vector.Vector3d consumeKnockback() {
+        org.cloudburstmc.math.vector.Vector3d v = knockbackVelocity;
+        knockbackVelocity = null;
+        return v;
     }
 
     // ---- 指令 API（动作执行器/意图解析调用）----

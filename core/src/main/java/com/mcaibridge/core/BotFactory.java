@@ -29,6 +29,7 @@ public final class BotFactory {
         ActionExecutor executor = new ActionExecutor(cfg, bot, controller, world, entities, survival);
         controller.setWorld(world);
         controller.setExecutor(executor);
+        controller.setSurvival(survival);
         survival.setDeathListener(() -> {
             executor.clear();
             controller.stopMoving();

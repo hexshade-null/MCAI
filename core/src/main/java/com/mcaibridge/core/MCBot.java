@@ -115,6 +115,7 @@ public class MCBot {
                 reconnectAttempts.set(0);
                 log.info("已连接服务器，玩家 {} 登录成功", auth.profile().getName());
                 listener.onStateChange(State.CONNECTED, auth.profile().getName());
+                com.mcaibridge.protocol.ClientInfoSender.send(MCBot.this);
             }
 
             @Override
