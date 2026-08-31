@@ -132,6 +132,18 @@ public class EntityTracker {
         return entities.get(entityId);
     }
 
+    public TrackedEntity get(UUID uuid) {
+        for (TrackedEntity e : entities.values()) {
+            if (e.uuid != null && e.uuid.equals(uuid)) return e;
+        }
+        return null;
+    }
+
+    /** UUID → 玩家名（PlayerInfo 名单）。 */
+    public String playerName(UUID uuid) {
+        return uuid != null ? playerNames.get(uuid) : null;
+    }
+
     /** 按玩家名找实体（AddEntity 的 uuid ↔ PlayerInfo 名单）。 */
     public TrackedEntity findPlayer(String name) {
         if (name == null || name.isBlank()) return null;

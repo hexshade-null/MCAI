@@ -490,6 +490,11 @@ public class ActionExecutor {
 
     private int resolveTargetId(String target) {
         double[] p = controller.position();
+        // 战斗状态机会传实体 id 数字
+        if (target != null && target.matches("\\d+")) {
+            var e = entities.get(Integer.parseInt(target));
+            return e != null ? e.id : -1;
+        }
         if (target == null || target.isBlank()) {
             TrackedEntity h = entities.nearestHostile(p[0], p[1], p[2], 24, 10);
             log.info("resolveTarget: pos=({},{},{}) tracked={} nearest={}", p[0], p[1], p[2], entities.size(),

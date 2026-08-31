@@ -49,6 +49,27 @@ public final class BotFactory {
         chatHandler.setTaskPlanner(planner);
         chatHandler.setContext(context);
 
+        // 战斗系统
+        com.mcaibridge.config.BridgeConfig cfgRef = cfg;
+        com.mcaibridge.combat.DamageListener damageListener = new com.mcaibridge.combat.DamageListener(entities, context);
+        com.mcaibridge.combat.CombatStateMachine combat = new com.mcaibridge.combat.CombatStateMachine(
+                new com.mcaibridge.combat.CombatStateMachine.BridgeConfigRef() {
+                    @Override
+                    public boolean combatAuto() {
+                        return cfgRef.combatAuto;
+                    }
+
+                    @Override
+                    public com.mcaibridge.config.BridgeConfig config() {
+                        return cfgRef;
+                    }
+                },
+                controller, entities, survival, executor, context);
+        combat.setReporter(chatHandler::sendActionReport);
+        damageListener.setOnHurt((attackerId, attackerName) -> combat.onHurt(attackerId, attackerName));
+        bot.setDamageListener(damageListener);
+        combat.start();
+
         bot.setChatHandler(chatHandler);
         bot.setController(controller);
         bot.setWorld(world);

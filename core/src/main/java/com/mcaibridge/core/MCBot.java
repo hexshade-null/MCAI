@@ -54,6 +54,7 @@ public class MCBot {
     private volatile com.mcaibridge.world.WorldModel world;
     private volatile com.mcaibridge.world.EntityTracker entities;
     private volatile com.mcaibridge.world.SurvivalManager survival;
+    private volatile com.mcaibridge.combat.DamageListener damageListener;
     private volatile boolean shutdown;
 
     public MCBot(BridgeConfig cfg, AuthResult auth, Listener listener) {
@@ -80,6 +81,10 @@ public class MCBot {
 
     public void setSurvival(com.mcaibridge.world.SurvivalManager survival) {
         this.survival = survival;
+    }
+
+    public void setDamageListener(com.mcaibridge.combat.DamageListener listener) {
+        this.damageListener = listener;
     }
 
     /** 发送任意协议包（移动/挖掘/指令等）。 */
@@ -155,6 +160,14 @@ public class MCBot {
                         sm.handle(packet);
                     } catch (Exception e) {
                         log.debug("生存辅助处理包异常: {}", e.toString());
+                    }
+                }
+                com.mcaibridge.combat.DamageListener dl = damageListener;
+                if (dl != null) {
+                    try {
+                        dl.handle(packet);
+                    } catch (Exception e) {
+                        log.debug("受伤监听处理包异常: {}", e.toString());
                     }
                 }
                 PlayerController ctl = controller;

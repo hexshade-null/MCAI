@@ -122,6 +122,7 @@ public class BridgeConfig {
     public int eatBelowFood = 10;           // 饥饿值低于该值触发进食（0-20）
     public int digDelayMs = 900;            // 挖掘 START→FINISH 间隔（空手近似值，可按工具调整）
     public boolean sprintKnockback = true;  // 攻击瞬间保持疾跑状态（原版疾跑击退）
+    public boolean combatAuto = true;       // 自主战斗反应（被打反击/低血逃跑）
     public List<Integer> foodItemIds = new ArrayList<>(); // 可食用物品的协议数字 id（实测填充；空=内置表）
 
     public List<ServerEntry> servers = new ArrayList<>();
@@ -210,6 +211,7 @@ public class BridgeConfig {
         c.eatBelowFood = eatBelowFood;
         c.digDelayMs = digDelayMs;
         c.sprintKnockback = sprintKnockback;
+        c.combatAuto = combatAuto;
         c.foodItemIds.addAll(foodItemIds);
         for (ServerEntry s : servers) {
             ServerEntry cs = new ServerEntry();
@@ -260,6 +262,7 @@ public class BridgeConfig {
             eatBelowFood = (int) num(survival, "eat_below_food", eatBelowFood);
             digDelayMs = (int) num(survival, "dig_delay_ms", digDelayMs);
             sprintKnockback = bool(survival, "sprint_knockback", sprintKnockback);
+            combatAuto = bool(survival, "combat_auto", combatAuto);
             Object ids = survival.get("food_item_ids");
             if (ids instanceof List<?> il && !il.isEmpty()) {
                 foodItemIds.clear();
