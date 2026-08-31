@@ -44,6 +44,7 @@ public class ActionExecutor {
     private final WorldModel world;
     private final EntityTracker entities;
     private final SurvivalManager survival;
+    private final com.mcaibridge.mining.MiningProgressTracker mining;
 
     private final ArrayDeque<Action> queue = new ArrayDeque<>();
     private Action current;
@@ -52,6 +53,7 @@ public class ActionExecutor {
     private long stepStart;
     private long lastSubStep;
     private Vector3i digPos;
+    private boolean digStarted;
     private int attackEntityId = -1;
     private String followName;
 
@@ -66,6 +68,7 @@ public class ActionExecutor {
         this.world = world;
         this.entities = entities;
         this.survival = survival;
+        this.mining = new com.mcaibridge.mining.MiningProgressTracker(bot, world, survival);
     }
 
     public void setReporter(Consumer<String> reporter) {
@@ -84,6 +87,7 @@ public class ActionExecutor {
         queue.clear();
         current = null;
         attackEntityId = -1;
+        mining.abort();
     }
 
     public synchronized boolean busy() {
@@ -145,8 +149,15 @@ public class ActionExecutor {
                     return;
                 }
                 digPos = pos;
-                bot.send(new ServerboundPlayerActionPacket(PlayerAction.START_DIGGING, pos, Direction.DOWN, 0));
-                bot.send(new ServerboundSwingPacket(Hand.MAIN_HAND));
+                digStarted = false;
+                double[] p = controller.position();
+                double dx = pos.getX() + 0.5 - p[0], dz = pos.getZ() + 0.5 - p[2];
+                if (dx * dx + dz * dz <= 4.5 * 4.5) {
+                    controller.stopMoving();
+                    startDigging();
+                } else {
+                    controller.walkTo(pos.getX() + 0.5, pos.getZ() + 0.5);
+                }
             }
             case "attack" -> {
                 attackEntityId = resolveTargetId(argS(a, "target", ""));
@@ -211,17 +222,21 @@ public class ActionExecutor {
                 return false;
             }
             case "dig" -> {
-                if (now - lastSubStep > SWING_INTERVAL_MS && digPos != null) {
-                    lastSubStep = now;
-                    bot.send(new ServerboundSwingPacket(Hand.MAIN_HAND));
-                }
-                if (now - stepStart >= cfg.digDelayMs) {
-                    if (digPos != null) {
-                        bot.send(new ServerboundPlayerActionPacket(PlayerAction.FINISH_DIGGING, digPos, Direction.DOWN, 0));
+                if (!digStarted) {
+                    double[] p = controller.position();
+                    double dx = digPos.getX() + 0.5 - p[0], dz = digPos.getZ() + 0.5 - p[2];
+                    if (dx * dx + dz * dz <= 4.5 * 4.5) {
+                        controller.stopMoving();
+                        startDigging();
+                    } else if (now - stepStart > WALK_TIMEOUT_MS) {
+                        report("走不到挖掘点");
+                        return true;
+                    } else if (!controller.isMoving()) {
+                        controller.walkTo(digPos.getX() + 0.5, digPos.getZ() + 0.5);
                     }
-                    return true;
+                    return false;
                 }
-                return false;
+                return mining.tick();
             }
             case "attack" -> {
                 TrackedEntity e = attackEntityId >= 0 ? entities.get(attackEntityId) : null;
@@ -273,6 +288,16 @@ public class ActionExecutor {
     /** 当前手持物品 id（供攻击冷却/后续挖掘速度用）。 */
     private int survivalHeldItem() {
         return survival.heldItem();
+    }
+
+    /** 进入挖掘距离后：面向方块并按公式开始挖掘。 */
+    private void startDigging() {
+        digStarted = true;
+        controller.faceTo(digPos.getX() + 0.5, digPos.getY() + 0.5, digPos.getZ() + 0.5);
+        if (!mining.begin(digPos, controller.physicsOffGround(), controller.physicsInWater())) {
+            report("这个方块挖不动");
+            current = null;
+        }
     }
 
     private int resolveTargetId(String target) {

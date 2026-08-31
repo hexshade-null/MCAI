@@ -149,6 +149,15 @@ public class IntentParser {
             plan.actions.add(new ActionExecutor.Action("dig", null));
             return plan;
         }
+        var m3 = java.util.regex.Pattern.compile("(?:挖|dig)\\s*(-?\\d+)[ ,，]+(-?\\d+)[ ,，]+(-?\\d+)").matcher(s);
+        if (m3.find()) {
+            JsonObject a = arg("x", Double.parseDouble(m3.group(1)));
+            a.addProperty("y", Double.parseDouble(m3.group(2)));
+            a.addProperty("z", Double.parseDouble(m3.group(3)));
+            plan.say = "开挖 (" + m3.group(1) + ", " + m3.group(2) + ", " + m3.group(3) + ")";
+            plan.actions.add(new ActionExecutor.Action("dig", a));
+            return plan;
+        }
         var m = java.util.regex.Pattern.compile("(?:走到|走向|去)\\s*(-?[0-9.]+)[ ,，]+(-?[0-9.]+)").matcher(s);
         if (m.find()) {
             plan.say = "走向 (" + m.group(1) + ", " + m.group(2) + ")";

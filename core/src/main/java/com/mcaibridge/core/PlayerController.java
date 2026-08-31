@@ -148,6 +148,15 @@ public class PlayerController {
         return v;
     }
 
+    /** 物理状态（挖掘 ÷5 罚系数判定用；无物理时 false）。 */
+    public boolean physicsInWater() {
+        return physics != null && physics.isInWater();
+    }
+
+    public boolean physicsOffGround() {
+        return physics != null && !physics.isOnGround();
+    }
+
     // ---- 指令 API（动作执行器/意图解析调用）----
 
     public void follow(String playerName) {
