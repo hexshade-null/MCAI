@@ -45,6 +45,8 @@ public class EntityTracker {
         public volatile double x, y, z;
         public volatile float yaw;
         public volatile long seen;
+        /** 实体血量（metadata index 9；未收到=-1）。 */
+        public volatile float health = -1f;
 
         TrackedEntity(int id, UUID uuid, EntityType type, double x, double y, double z, float yaw) {
             this.id = id;
@@ -94,9 +96,12 @@ public class EntityTracker {
         } else if (packet instanceof ClientboundPlayerInfoRemovePacket p) {
             for (UUID u : p.getProfileIds()) playerNames.remove(u);
         } else if (packet instanceof ClientboundSetEntityDataPacket p) {
+            TrackedEntity te = entities.get(p.getEntityId());
             for (org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.EntityMetadata<?, ?> m : p.getMetadata()) {
                 if (m.getType() instanceof org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.FloatMetadataType) {
-                    log.debug("entity-meta id={} float[{}] = {}", p.getEntityId(), m.getId(), m.getValue());
+                    float v = (Float) m.getValue();
+                    log.debug("entity-meta id={} float[{}] = {}", p.getEntityId(), m.getId(), v);
+                    if (te != null && m.getId() == 9) te.health = v; // 实测：index 9=血量
                 }
             }
         }
@@ -147,6 +152,38 @@ public class EntityTracker {
     /** 调试用：当前跟踪到的全部僵尸。 */
     public java.util.List<TrackedEntity> zombies() {
         return entities.values().stream().filter(e -> e.type == EntityType.ZOMBIE).collect(java.util.stream.Collectors.toList());
+    }
+
+    /** 最近的玩家实体（不含自己——自己的 id 由 SurvivalManager 排除）。 */
+    public TrackedEntity nearestPlayer(double px, double py, double pz, double maxDist, double maxDy) {
+        TrackedEntity best = null;
+        double bestD = maxDist * maxDist;
+        for (TrackedEntity e : entities.values()) {
+            if (e.type != EntityType.PLAYER) continue;
+            if (Math.abs(e.y - py) > maxDy) continue;
+            double d = e.dist2(px, pz);
+            if (d <= bestD) {
+                bestD = d;
+                best = e;
+            }
+        }
+        return best;
+    }
+
+    /** 最近的掉落物实体（拾取目标）。 */
+    public TrackedEntity nearestItem(double px, double py, double pz, double maxDist, double maxDy) {
+        TrackedEntity best = null;
+        double bestD = maxDist * maxDist;
+        for (TrackedEntity e : entities.values()) {
+            if (e.type != EntityType.ITEM) continue;
+            if (Math.abs(e.y - py) > maxDy) continue;
+            double d = e.dist2(px, pz);
+            if (d <= bestD) {
+                bestD = d;
+                best = e;
+            }
+        }
+        return best;
     }
 
     /** 距 (px,py,pz) 最近的敌对生物（水平 ≤ maxDist 且垂直 ≤ maxDy——地下怪不可达不该选中）。 */

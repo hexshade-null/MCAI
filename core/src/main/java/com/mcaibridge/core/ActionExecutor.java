@@ -57,6 +57,19 @@ public class ActionExecutor {
     private int attackEntityId = -1;
     private String followName;
 
+    // 复合动作状态（scan/chop/mine/collect）
+    private String scanTarget = "log";
+    private int scanRadius = 24;
+    private com.mcaibridge.world.WorldScanner.Hit scanHit;
+    private int chopPhase; // 0=扫描 1=走近 2=挖 3=拾取
+    private Vector3i chopColumn;
+    private int chopTopY;
+    private long collectDeadline;
+    private final com.mcaibridge.world.WorldScanner scanner;
+
+    /** 动作失败回调（TaskPlanner 重试用）。 */
+    private volatile Runnable failureHandler;
+
     /** 动作执行过程汇报（聊天回复通道），由 ChatHandler 注入。 */
     private volatile Consumer<String> reporter;
 
@@ -69,10 +82,15 @@ public class ActionExecutor {
         this.entities = entities;
         this.survival = survival;
         this.mining = new com.mcaibridge.mining.MiningProgressTracker(bot, world, survival);
+        this.scanner = new com.mcaibridge.world.WorldScanner(world);
     }
 
     public void setReporter(Consumer<String> reporter) {
         this.reporter = reporter;
+    }
+
+    public void setFailureHandler(Runnable r) {
+        this.failureHandler = r;
     }
 
     /** 新意图覆盖旧队列；say 部分由调用方（ChatHandler）先行发送。 */
@@ -174,11 +192,166 @@ public class ActionExecutor {
                 controller.sendCommand(argS(a, "cmd", ""));
                 current = null;
             }
+            case "scan", "chop", "mine", "collect" -> beginComposite(a);
             default -> {
                 log.warn("未知动作类型: {}", a.type());
                 current = null;
             }
         }
+    }
+
+    // ---- 复合动作：scan/chop/mine/collect（感知→行走→挖掘→拾取状态机）----
+
+    private void beginComposite(Action a) {
+        scanTarget = argS(a, "target", a.type().equals("mine") ? "ore" : "log");
+        scanRadius = (int) argD(a, "radius", 24);
+        chopPhase = 0;
+        scanHit = null;
+        chopColumn = null;
+        collectDeadline = 0;
+    }
+
+    private boolean stepComposite(Action a, long now) {
+        double[] p = controller.position();
+        switch (a.type()) {
+            case "scan" -> {
+                var hit = scanner.findNearest(p[0], p[1], p[2], filterFor(scanTarget), scanRadius);
+                if (hit == null) {
+                    report("附近没找到" + scanTargetName());
+                    fail();
+                    return true;
+                }
+                report("找到了" + scanTargetName() + "，在 (" + hit.pos().getX() + ", " + hit.pos().getY() + ", " + hit.pos().getZ() + ")");
+                return true;
+            }
+            case "chop", "mine" -> {
+                return stepHarvest(a, now, p);
+            }
+            case "collect" -> {
+                var item = entities.nearestItem(p[0], p[1], p[2], 10, 8);
+                if (item == null) {
+                    report("捡到了！");
+                    return true;
+                }
+                if (now - stepStart > 15000) {
+                    report("掉落物够不着");
+                    fail();
+                    return true;
+                }
+                // 走进物品（拾取需重叠，走到 <0.5 才稳妥）
+                if (!controller.isMoving() || Math.sqrt(item.dist2(p[0], p[2])) > 0.5) controller.walkTo(item.x, item.z);
+                return false;
+            }
+            default -> {
+                return true;
+            }
+        }
+    }
+
+    /** chop/mine 共用：扫描→走近→逐块挖→拾取。 */
+    private boolean stepHarvest(Action a, long now, double[] p) {
+        boolean oreMode = a.type().equals("mine");
+        switch (chopPhase) {
+            case 0 -> {
+                var hit = scanner.findNearest(p[0], p[1], p[2],
+                        oreMode ? com.mcaibridge.world.WorldScanner.ORES : com.mcaibridge.world.WorldScanner.LOGS, scanRadius);
+                if (hit == null) {
+                    report(oreMode ? "附近没找到矿石" : "附近没找到树");
+                    fail();
+                    return true;
+                }
+                scanHit = hit;
+                chopColumn = hit.pos();
+                chopPhase = 1;
+            }
+            case 1 -> {
+                double dx = chopColumn.getX() + 0.5 - p[0], dz = chopColumn.getZ() + 0.5 - p[2];
+                double d = Math.sqrt(dx * dx + dz * dz);
+                if (d <= 4.0) {
+                    controller.stopMoving();
+                    chopPhase = 2;
+                } else if (now - stepStart > WALK_TIMEOUT_MS) {
+                    report("走不到目标");
+                    fail();
+                    return true;
+                } else if (!controller.isMoving()) {
+                    controller.walkTo(chopColumn.getX() + 0.5, chopColumn.getZ() + 0.5);
+                }
+                // 目标中途消失则重扫
+                if (world.blockAt(chopColumn.getX(), chopColumn.getY(), chopColumn.getZ()) == 0) chopPhase = 0;
+            }
+            case 2 -> {
+                if (mining.busy()) {
+                    mining.tick();
+                    return false;
+                }
+                Vector3i next = null;
+                int maxY = chopColumn.getY() + (oreMode ? 0 : 5);
+                for (int yy = chopColumn.getY(); yy <= maxY; yy++) {
+                    int st = world.blockAt(chopColumn.getX(), yy, chopColumn.getZ());
+                    boolean match = oreMode ? com.mcaibridge.world.BlockIds.isOre(st) : com.mcaibridge.world.BlockIds.isLog(st);
+                    if (match) {
+                        next = Vector3i.from(chopColumn.getX(), yy, chopColumn.getZ());
+                        break;
+                    }
+                }
+                if (next == null) {
+                    chopPhase = 3;
+                    return false;
+                }
+                double dx = next.getX() + 0.5 - p[0], dy = next.getY() - (p[1] + 1), dz = next.getZ() + 0.5 - p[2];
+                if (Math.sqrt(dx * dx + dy * dy + dz * dz) > 4.5) {
+                    report(oreMode ? "矿够不着，需要先挖过去" : "树干太高，够到的都砍完了");
+                    chopPhase = 3;
+                    return false;
+                }
+                controller.faceTo(next.getX() + 0.5, next.getY() + 0.5, next.getZ() + 0.5);
+                if (!mining.begin(next, controller.physicsOffGround(), controller.physicsInWater())) {
+                    report("挖不动这个方块");
+                    fail();
+                    return true;
+                }
+            }
+            case 3 -> {
+                var item = entities.nearestItem(p[0], p[1], p[2], 10, 8);
+                if (item == null) {
+                    report(oreMode ? "矿石到手！" : "树砍完了，掉落物也捡好了！");
+                    return true;
+                }
+                if (now - stepStart > 30_000) {
+                    report("先收工，有掉落物没捡到");
+                    return true;
+                }
+                // 走进掉落物完成拾取
+                controller.walkTo(item.x, item.z);
+                return false;
+            }
+            default -> {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private com.mcaibridge.world.WorldScanner.BlockFilter filterFor(String t) {
+        return switch (t) {
+            case "ore", "矿", "铁矿", "矿石" -> com.mcaibridge.world.WorldScanner.ORES;
+            case "water", "水" -> com.mcaibridge.world.WorldScanner.WATER;
+            default -> com.mcaibridge.world.WorldScanner.LOGS;
+        };
+    }
+
+    private String scanTargetName() {
+        return switch (scanTarget) {
+            case "ore", "矿", "铁矿", "矿石" -> "矿石";
+            case "water", "水" -> "水";
+            default -> "树";
+        };
+    }
+
+    private void fail() {
+        Runnable r = failureHandler;
+        if (r != null) r.run();
     }
 
     /** 返回 true 表示动作完成（成功或失败均算）。 */
@@ -278,6 +451,9 @@ public class ActionExecutor {
                     }
                 }
                 return false;
+            }
+            case "scan", "chop", "mine", "collect" -> {
+                return stepComposite(a, now);
             }
             default -> {
                 return true;

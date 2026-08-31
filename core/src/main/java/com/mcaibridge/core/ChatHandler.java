@@ -32,6 +32,8 @@ public class ChatHandler {
     private volatile PlayerController controller;
     private volatile IntentParser parser;
     private volatile ActionExecutor executor;
+    private volatile com.mcaibridge.ai.TaskPlanner taskPlanner;
+    private volatile com.mcaibridge.ai.ContextManager context;
     private volatile com.mcaibridge.world.EntityTracker entities;
     private volatile com.mcaibridge.world.SurvivalManager survival;
     private final HttpClient http = HttpClient.newBuilder()
@@ -68,6 +70,14 @@ public class ChatHandler {
                                 com.mcaibridge.world.SurvivalManager survival) {
         this.entities = entities;
         this.survival = survival;
+    }
+
+    public void setTaskPlanner(com.mcaibridge.ai.TaskPlanner planner) {
+        this.taskPlanner = planner;
+    }
+
+    public void setContext(com.mcaibridge.ai.ContextManager context) {
+        this.context = context;
     }
 
     public void handle(Packet packet) {
@@ -109,7 +119,12 @@ public class ChatHandler {
                         }
                         ActionExecutor ex = this.executor;
                         if (plan.hasAction() && ex != null) {
-                            ex.submit(plan.actions);
+                            com.mcaibridge.ai.TaskPlanner tp = this.taskPlanner;
+                            if (tp != null) {
+                                tp.submit(plan.actions, 1); // 失败自动重试 1 次
+                            } else {
+                                ex.submit(plan.actions);
+                            }
                             if (plan.say == null || plan.say.isBlank()) {
                                 sendReply(prefix() + "收到，马上行动！");
                             }

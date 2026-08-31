@@ -42,6 +42,13 @@ public final class BotFactory {
         chatHandler.setWorldModules(entities, survival);
         executor.setReporter(chatHandler::sendActionReport);
 
+        com.mcaibridge.ai.ContextManager context = new com.mcaibridge.ai.ContextManager(
+                controller, survival, entities, new com.mcaibridge.world.WorldScanner(world));
+        com.mcaibridge.ai.TaskPlanner planner = new com.mcaibridge.ai.TaskPlanner(executor);
+        planner.setReporter(chatHandler::sendActionReport);
+        chatHandler.setTaskPlanner(planner);
+        chatHandler.setContext(context);
+
         bot.setChatHandler(chatHandler);
         bot.setController(controller);
         bot.setWorld(world);

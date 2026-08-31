@@ -21,7 +21,8 @@ import java.util.Set;
 public class IntentParser {
     private static final Logger log = LoggerFactory.getLogger(IntentParser.class);
     private static final Set<String> KNOWN_TYPES = Set.of(
-            "walk_to", "follow", "stop", "dig", "attack", "eat", "command");
+            "walk_to", "follow", "stop", "dig", "attack", "eat", "command",
+            "scan", "chop", "mine", "collect");
 
     /** 一次解析结果：say=要说的回复；actions=要执行的动作。 */
     public static class Plan {
@@ -46,6 +47,10 @@ public class IntentParser {
             - {"type":"walk_to","x":数字,"z":数字} 走到坐标
             - {"type":"follow","target":"玩家名或英文生物类型"} 跟随玩家或生物（如 zombie、pig）
             - {"type":"stop"} 停止移动
+            - {"type":"chop"} 自主砍树：扫描最近的树→走过去→从下往上砍干→捡掉落
+            - {"type":"mine","target":"ore"} 自主挖矿：扫描最近的矿石→走过去→挖→捡掉落
+            - {"type":"scan","target":"log或ore"} 报告最近的树/矿位置
+            - {"type":"collect"} 去捡附近的掉落物
             - {"type":"dig"} 挖脚下方块；或 {"type":"dig","x":数字,"y":数字,"z":数字} 挖指定方块
             - {"type":"attack","target":"玩家名或英文生物类型"} 攻击目标；不写 target 默认攻击最近的敌对生物
             - {"type":"eat"} 吃东西（需要快捷栏里有食物）
@@ -142,6 +147,29 @@ public class IntentParser {
             if (ctx.sender() == null || ctx.sender().isBlank()) return null;
             plan.say = "好的，我这就来！";
             plan.actions.add(new ActionExecutor.Action("follow", arg("target", ctx.sender())));
+            return plan;
+        }
+        if (s.matches("(砍树|砍棵树|砍了那棵树|chop( tree)?)\\S{0,3}")) {
+            plan.say = "我去找树砍！";
+            plan.actions.add(new ActionExecutor.Action("chop", new JsonObject()));
+            return plan;
+        }
+        if (s.matches("(挖矿|挖点(矿|铁矿|煤矿|金矿|钻石)|mine)\\S{0,3}")) {
+            plan.say = "我去找矿挖！";
+            plan.actions.add(new ActionExecutor.Action("mine", new JsonObject()));
+            return plan;
+        }
+        if (s.matches("(捡东西|捡一下|collect)\\S{0,3}")) {
+            plan.say = "我去捡掉落物";
+            plan.actions.add(new ActionExecutor.Action("collect", new JsonObject()));
+            return plan;
+        }
+        if (s.matches("(找树|找矿|看看附近|scan)\\S{0,4}")) {
+            boolean ore = s.contains("矿");
+            plan.say = "我看看附近…";
+            JsonObject a = new JsonObject();
+            a.addProperty("target", ore ? "ore" : "log");
+            plan.actions.add(new ActionExecutor.Action("scan", a));
             return plan;
         }
         if (s.matches("(挖|dig)\\S{0,2}")) {
