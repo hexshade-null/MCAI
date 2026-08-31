@@ -48,6 +48,9 @@ public class ActionExecutor {
 
     private final ArrayDeque<Action> queue = new ArrayDeque<>();
     private Action current;
+    private Action pendingAction;           // 反应延迟中的待执行动作
+    private long pendingAt;
+    private final com.mcaibridge.action.HumanizedExecutor humanize = new com.mcaibridge.action.HumanizedExecutor();
 
     // current 的执行状态
     private long stepStart;
@@ -104,6 +107,7 @@ public class ActionExecutor {
     public synchronized void clear() {
         queue.clear();
         current = null;
+        pendingAction = null;
         attackEntityId = -1;
         mining.abort();
     }
@@ -114,11 +118,17 @@ public class ActionExecutor {
 
     /** 由 PlayerController 每 100ms 调一次。 */
     public synchronized void tick() {
-        if (current == null) {
-            Action next = queue.poll();
-            if (next == null) return;
-            current = next;
-            stepStart = System.currentTimeMillis();
+        long now = System.currentTimeMillis();
+        if (current == null && pendingAction == null && !queue.isEmpty()) {
+            // 真人反应延迟：新动作开始前 100-400ms，偶发分神
+            pendingAction = queue.poll();
+            pendingAt = now + humanize.nextReactionDelayMs() + humanize.maybeDistractionMs();
+        }
+        if (current == null && pendingAction != null) {
+            if (now < pendingAt) return;
+            current = pendingAction;
+            pendingAction = null;
+            stepStart = now;
             lastSubStep = 0;
             begin(current);
         }
@@ -433,14 +443,15 @@ public class ActionExecutor {
                     return false;
                 }
                 controller.stopMoving();
-                // 冷却节奏：手持武器冷却 + 抖动（原版 1.9 战斗，伤害按冷却比例结算）
+                // 冷却节奏：手持武器冷却 + 真人抖动（原版 1.9 战斗，伤害按冷却比例结算）
                 long cooldown = (long) (com.mcaibridge.mining.ToolSpeedRegistry
-                        .attackCooldownSeconds(survivalHeldItem()) * 1000) + 150 + (long) (Math.random() * 150);
+                        .attackCooldownSeconds(survivalHeldItem()) * 1000)
+                        + humanize.nextAttackJitterMs();
                 if (now - lastSubStep >= cooldown) {
-                    lastSubStep = now;
+                    controller.faceTo(e.x, e.y + 1.0, e.z);
+                    if (!controller.isAimed()) return false; // 自然转向，瞄准到位才出手
                     // 原版疾跑击退：攻击瞬间保持疾跑状态，命中后立即取消
                     boolean sprintHit = cfg.sprintKnockback && survival.entityId() > 0;
-                    controller.faceTo(e.x, e.y + 1.0, e.z);
                     if (sprintHit) {
                         com.mcaibridge.protocol.ActionStateSender.setSprinting(bot, survival.entityId(), true);
                     }
@@ -449,6 +460,7 @@ public class ActionExecutor {
                     if (sprintHit) {
                         com.mcaibridge.protocol.ActionStateSender.setSprinting(bot, survival.entityId(), false);
                     }
+                    lastSubStep = now;
                 }
                 return false;
             }

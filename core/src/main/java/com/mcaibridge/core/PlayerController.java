@@ -57,6 +57,9 @@ public class PlayerController {
     private volatile com.mcaibridge.world.SurvivalManager survival;
     private volatile com.mcaibridge.physics.PhysicsEngine physics;
     private boolean sprintState;
+    private final com.mcaibridge.action.HumanizedExecutor humanize = new com.mcaibridge.action.HumanizedExecutor();
+    private final com.mcaibridge.action.AimController aim = new com.mcaibridge.action.AimController(humanize);
+    private final com.mcaibridge.action.MoveController moveHelper = new com.mcaibridge.action.MoveController(this);
     /** 被击退速度（SetEntityMotion(self) 原始值；M2 物理引擎消费）。 */
     private volatile org.cloudburstmc.math.vector.Vector3d knockbackVelocity;
     private static final double EYE_HEIGHT = 1.62;
@@ -108,6 +111,7 @@ public class PlayerController {
                 this.pitch = p.getXRot();
                 this.hasPos = true;
                 log.info("位置同步: ({}, {}, {})", x, y, z);
+                aim.snap((float) yaw, (float) pitch);
                 syncPhysics();
             }
         } else if (packet instanceof org.geysermc.mcprotocollib.protocol.packet.ingame.clientbound.entity.ClientboundSetEntityMotionPacket p) {
@@ -131,14 +135,30 @@ public class PlayerController {
     }
 
     /**
-     * 面向目标并立即上报位置+朝向（攻击前的状态刷新，服务端据此计算击退方向/距离校验）。
+     * 面向目标（自然转向，攻击前等待 isAimed()）。
      */
     public void faceTo(double tx, double ty, double tz) {
         double dx = tx - x, dy = ty - (y + EYE_HEIGHT), dz = tz - z;
         double horiz = Math.sqrt(dx * dx + dz * dz);
-        yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
-        pitch = (float) -Math.toDegrees(Math.atan2(dy, horiz));
-        sendMove();
+        float tyaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+        float tpitch = (float) -Math.toDegrees(Math.atan2(dy, horiz));
+        aim.aimAt(tyaw, tpitch);
+    }
+
+    /** 瞄准是否到位（误差 <4°）。 */
+    public boolean isAimed() {
+        return aim.isAimed();
+    }
+
+    /** 脱困跳。 */
+    public void jumpNow() {
+        if (physics != null) physics.requestJump();
+    }
+
+    /** 卡住侧移（MoveController 用）。 */
+    public void nudgeTo(double x, double z) {
+        this.moveTargetX = x;
+        this.moveTargetZ = z;
     }
 
     /** 被击退速度（未收到时 null）。 */
@@ -240,18 +260,24 @@ public class PlayerController {
 
             if (physics != null) {
                 // 物理路径：意图 → 50ms×2 积分 → 采点发包
+                moveHelper.tick(moving, x, y, z);
+                Double ctx2 = moveTargetX, ctz = moveTargetZ; // 侧移可能改写目标
+                moving = ctx2 != null && ctz != null;
                 if (moving) {
-                    double dx = tx - x, dz = tz - z;
+                    double dx = ctx2 - x, dz = ctz - z;
                     double dist = Math.sqrt(dx * dx + dz * dz);
                     boolean sprint = dist > 10 && survival != null && survival.entityId() > 0;
                     double speed = sprint ? com.mcaibridge.physics.VanillaPhysics.SPRINT_SPEED
                             : com.mcaibridge.physics.VanillaPhysics.WALK_SPEED;
                     physics.setIntent(dx, dz, speed, sprint);
-                    yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
                     if (physics.isCollidedHorizontal() || physics.isInWater() || physics.isOnLadder()) {
                         physics.requestJump(); // 跨障碍/游泳上浮/爬梯
                     }
                     updateSprint(sprint);
+                    if (!aim.hasTarget()) {
+                        yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+                        pitch = 0;
+                    }
                 } else {
                     physics.setIntent(0, 0, 0, false);
                     updateSprint(false);
@@ -266,6 +292,8 @@ public class PlayerController {
                 y = physics.getY();
                 z = physics.getZ();
                 onGround = physics.isOnGround();
+                yaw = aim.tickYaw();
+                pitch = aim.tickPitch();
                 sendMove();
                 idleCounter.set(0);
                 return;
