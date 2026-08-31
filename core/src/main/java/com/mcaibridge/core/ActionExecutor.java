@@ -59,6 +59,8 @@ public class ActionExecutor {
     private boolean digStarted;
     private int attackEntityId = -1;
     private String followName;
+    private double lastFoeDist = -1;
+    private float lastFoeHealth = -1;
 
     // 复合动作状态（scan/chop/mine/collect）
     private String scanTarget = "log";
@@ -189,6 +191,8 @@ public class ActionExecutor {
             }
             case "attack" -> {
                 attackEntityId = resolveTargetId(argS(a, "target", ""));
+                lastFoeDist = -1;
+                lastFoeHealth = -1;
                 if (attackEntityId >= 0 && survival.entityId() > 0) {
                     controller.faceTo(entities.get(attackEntityId).x, entities.get(attackEntityId).y, entities.get(attackEntityId).z);
                 }
@@ -275,6 +279,12 @@ public class ActionExecutor {
                 chopPhase = 1;
             }
             case 1 -> {
+                String abort = controller.consumeWalkAbort();
+                if (abort != null) {
+                    report("走不到目标：" + abort);
+                    fail();
+                    return true;
+                }
                 double dx = chopColumn.getX() + 0.5 - p[0], dz = chopColumn.getZ() + 0.5 - p[2];
                 double d = Math.sqrt(dx * dx + dz * dz);
                 if (d <= 4.0) {
@@ -316,6 +326,7 @@ public class ActionExecutor {
                     return false;
                 }
                 controller.faceTo(next.getX() + 0.5, next.getY() + 0.5, next.getZ() + 0.5);
+                selectBestTool(world.blockAt(next.getX(), next.getY(), next.getZ()));
                 if (!mining.begin(next, controller.physicsOffGround(), controller.physicsInWater())) {
                     report("挖不动这个方块");
                     fail();
@@ -369,6 +380,12 @@ public class ActionExecutor {
         long now = System.currentTimeMillis();
         switch (a.type()) {
             case "walk_to" -> {
+                String abort = controller.consumeWalkAbort();
+                if (abort != null) {
+                    report("走不过去：" + abort);
+                    fail();
+                    return true;
+                }
                 if (!controller.isMoving()) return true;
                 if (now - stepStart > WALK_TIMEOUT_MS) {
                     controller.stopMoving();
@@ -430,6 +447,12 @@ public class ActionExecutor {
                 }
                 double[] p = controller.position();
                 double d = Math.sqrt(e.dist2(p[0], p[2]));
+                // 进展续时：距离在缩短或目标在掉血就不算超时（高机动目标被击退后追击不放弃）
+                boolean progress = lastFoeDist < 0 || d < lastFoeDist - 0.8
+                        || (e.health > 0 && lastFoeHealth > 0 && e.health < lastFoeHealth - 0.01f);
+                if (progress) stepStart = now;
+                lastFoeDist = d;
+                lastFoeHealth = e.health;
                 if (now - stepStart > ATTACK_TIMEOUT_MS) {
                     controller.stopMoving();
                     report("打了半天没打完，先停");
@@ -478,14 +501,38 @@ public class ActionExecutor {
         return survival.heldItem();
     }
 
-    /** 进入挖掘距离后：面向方块并按公式开始挖掘。 */
+    /** 进入挖掘距离后：切最优工具 → 面向方块 → 按公式开始挖掘。 */
     private void startDigging() {
         digStarted = true;
+        selectBestTool(world.blockAt(digPos.getX(), digPos.getY(), digPos.getZ()));
         controller.faceTo(digPos.getX() + 0.5, digPos.getY() + 0.5, digPos.getZ() + 0.5);
         if (!mining.begin(digPos, controller.physicsOffGround(), controller.physicsInWater())) {
             report("这个方块挖不动");
             current = null;
         }
+    }
+
+    /** 自动切最优工具：能采集优先，其次有效工具速度。 */
+    private void selectBestTool(int blockStateId) {
+        if (blockStateId <= 0) return;
+        String blockName = com.mcaibridge.world.BlockIds.name(blockStateId);
+        int[] hb = survival.hotbarSnapshot();
+        int bestSlot = -1;
+        double bestSpeed = -1;
+        boolean bestHarvest = false;
+        for (int i = 0; i < 9; i++) {
+            if (hb[i] == 0) continue;
+            var info = com.mcaibridge.mining.ToolSpeedRegistry.tool(hb[i]);
+            boolean eff = com.mcaibridge.mining.ToolSpeedRegistry.isEffective(info.type(), blockName);
+            boolean harv = com.mcaibridge.mining.HarvestChecker.canHarvest(hb[i], blockStateId);
+            double s = eff ? info.speed() : 1.0;
+            if ((harv && !bestHarvest) || (harv == bestHarvest && s > bestSpeed)) {
+                bestSlot = i;
+                bestSpeed = s;
+                bestHarvest = harv;
+            }
+        }
+        if (bestSlot >= 0) survival.selectSlot(bestSlot);
     }
 
     private int resolveTargetId(String target) {

@@ -62,6 +62,12 @@ public class PhysicsEngine {
         this.vz = vz;
     }
 
+    /** 水平急停（防坠落护栏触发时消除惯性滑行）。 */
+    public void haltHorizontal() {
+        this.vx = 0;
+        this.vz = 0;
+    }
+
     /** 服务器位置校正/重生/传送：硬重置。 */
     public void teleport(double x, double y, double z) {
         this.x = x;

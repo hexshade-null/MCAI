@@ -27,8 +27,9 @@ public class DamageListener {
 
     public void handle(Packet packet) {
         if (packet instanceof ClientboundDamageEventPacket p) {
-            int attackerId = p.getSourceCauseId();
-            if (attackerId == 0) return; // 环境/摔落伤害
+            // 实测 1.21.11：部分攻击 cause=-1，直接归因在 directId；均无效才视为环境伤害
+            int attackerId = p.getSourceCauseId() > 0 ? p.getSourceCauseId() : p.getSourceDirectId();
+            if (attackerId <= 0) return; // 环境/摔落伤害
             var attacker = entities.get(attackerId);
             String name = attacker != null
                     ? resolveName(attacker.uuid, attacker.type.name()) : "entity#" + attackerId;

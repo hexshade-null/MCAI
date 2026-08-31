@@ -96,6 +96,19 @@ public class SurvivalManager {
         return (s >= 0 && s < 9) ? hotbar[s] : 0;
     }
 
+    /** 快捷栏快照（9 个物品协议 id，0=空）。 */
+    public int[] hotbarSnapshot() {
+        return hotbar.clone();
+    }
+
+    /** 切换手持槽位（切最优工具用）；同槽不发。 */
+    public void selectSlot(int slot) {
+        if (slot < 0 || slot >= 9 || slot == heldSlot) return;
+        heldSlot = slot;
+        bot.send(new ServerboundSetCarriedItemPacket(slot));
+        log.info("切换手持: 槽位 {} (物品 id {})", slot, hotbar[slot]);
+    }
+
     private void acceptSlot(int slot, ItemStack item) {
         if (slot < HOTBAR_CONTAINER_START || slot >= HOTBAR_CONTAINER_START + 9) return;
         hotbar[slot - HOTBAR_CONTAINER_START] = item != null ? item.getId() : 0;
@@ -134,6 +147,7 @@ public class SurvivalManager {
         if (System.currentTimeMillis() - lastEat < EAT_COOLDOWN_MS) return false;
         int slot = findFoodSlot();
         if (slot < 0) {
+            lastEat = System.currentTimeMillis(); // 没食物也进冷却，避免刷屏
             log.info("想进食但快捷栏没有可吃的食物");
             return false;
         }
